@@ -32,6 +32,7 @@ type UploadResult = {
 };
 
 const STORAGE_BUCKET = "product-images";
+const MAX_PREVIEW_IMAGES = 2;
 
 function createSafeFileName(file: File) {
   const extension =
@@ -186,9 +187,12 @@ export default function EditProductPage() {
       setIsActive(product.is_active);
       setCurrentCoverUrl(product.image);
       setCurrentPreviewImages(
-        product.preview_images?.length > 0
-          ? product.preview_images
-          : [product.image],
+        (product.preview_images ?? [])
+          .filter(
+            (imageUrl) =>
+              imageUrl !== product.image,
+          )
+          .slice(0, MAX_PREVIEW_IMAGES),
       );
 
       setLoadingProduct(false);
@@ -364,6 +368,14 @@ export default function EditProductPage() {
       return "กรุณาเลือกรูปปกสินค้า";
     }
 
+    if (
+      currentPreviewImages.length +
+        newPreviewFiles.length >
+      MAX_PREVIEW_IMAGES
+    ) {
+      return `รูปพรีวิวรวมต้องไม่เกิน ${MAX_PREVIEW_IMAGES} รูป`;
+    }
+
     return "";
   };
 
@@ -434,18 +446,18 @@ export default function EditProductPage() {
         newUploadedPaths.push(upload.filePath);
       });
 
-      const finalPreviewImages = [
-        finalCoverUrl,
-        ...currentPreviewImages.filter(
-          (url) => url !== currentCoverUrl,
-        ),
+      const additionalPreviewImages = [
+        ...currentPreviewImages,
         ...newPreviewUploads.map(
           (upload) => upload.publicUrl,
         ),
-      ];
+      ].slice(0, MAX_PREVIEW_IMAGES);
 
       const uniquePreviewImages = Array.from(
-        new Set(finalPreviewImages),
+        new Set([
+          finalCoverUrl,
+          ...additionalPreviewImages,
+        ]),
       );
 
       const { error: updateError } =
@@ -496,13 +508,6 @@ export default function EditProductPage() {
   const removeCurrentPreviewImage = (
     imageUrl: string,
   ) => {
-    if (imageUrl === currentCoverUrl) {
-      setMessage(
-        "รูปปกไม่สามารถลบจากรูปตัวอย่างตรงนี้ได้ กรุณาอัปโหลดรูปปกใหม่แทน",
-      );
-      return;
-    }
-
     setCurrentPreviewImages((currentImages) =>
       currentImages.filter(
         (url) => url !== imageUrl,
@@ -819,10 +824,23 @@ export default function EditProductPage() {
               </div>
 
               <div className="mt-7">
-                <p className="text-sm font-semibold text-[#5c4a50]">
-                  รูปตัวอย่างปัจจุบัน
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-[#5c4a50]">
+                    รูปพรีวิวปัจจุบัน
+                  </p>
 
+                  <span className="text-xs font-semibold text-[#d47691]">
+                    {currentPreviewImages.length +
+                      newPreviewFiles.length}{" "}
+                    / {MAX_PREVIEW_IMAGES} รูป
+                  </span>
+                </div>
+
+                {currentPreviewImages.length === 0 ? (
+                  <div className="mt-3 rounded-2xl bg-[#fff8fa] p-4 text-sm text-gray-500">
+                    ยังไม่มีรูปพรีวิวเพิ่มเติม
+                  </div>
+                ) : (
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                   {currentPreviewImages.map(
                     (imageUrl, index) => (
@@ -851,26 +869,75 @@ export default function EditProductPage() {
                     ),
                   )}
                 </div>
+                )}
               </div>
 
               <div className="mt-7">
                 <p className="text-sm font-semibold text-[#5c4a50]">
-                  เพิ่มรูปตัวอย่างใหม่
+                  เพิ่มรูปพรีวิวใหม่
+                </p>
+
+                <p className="mt-2 text-xs leading-5 text-gray-500">
+                  เพิ่มรูปพรีวิวได้สูงสุด 2 รูป ไม่รวมรูปปก
+                  ตอนนี้เพิ่มได้อีก{" "}
+                  {Math.max(
+                    0,
+                    MAX_PREVIEW_IMAGES -
+                      currentPreviewImages.length,
+                  )}{" "}
+                  รูป
                 </p>
 
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   multiple
+                  disabled={
+                    currentPreviewImages.length >=
+                    MAX_PREVIEW_IMAGES
+                  }
                   onChange={(event) => {
-                    setNewPreviewFiles(
+                    const selectedFiles =
                       Array.from(
                         event.target.files ?? [],
-                      ),
+                      );
+
+                    const remainingSlots =
+                      MAX_PREVIEW_IMAGES -
+                      currentPreviewImages.length;
+
+                    if (remainingSlots <= 0) {
+                      setNewPreviewFiles([]);
+                      setMessage(
+                        "มีรูปพรีวิวครบ 2 รูปแล้ว กรุณาลบรูปเดิมก่อนเพิ่มรูปใหม่",
+                      );
+                      event.target.value = "";
+                      return;
+                    }
+
+                    if (
+                      selectedFiles.length >
+                      remainingSlots
+                    ) {
+                      setNewPreviewFiles(
+                        selectedFiles.slice(
+                          0,
+                          remainingSlots,
+                        ),
+                      );
+                      setMessage(
+                        `เพิ่มได้อีก ${remainingSlots} รูป ระบบเก็บไว้เฉพาะรูปแรกตามจำนวนที่เหลือ`,
+                      );
+                      event.target.value = "";
+                      return;
+                    }
+
+                    setNewPreviewFiles(
+                      selectedFiles,
                     );
                     setMessage("");
                   }}
-                  className="mt-3 block w-full rounded-2xl border border-dashed border-pink-200 bg-[#fff9fb] p-4 text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-[#ffe1eb] file:px-4 file:py-2 file:font-semibold file:text-[#d65f84]"
+                  className="mt-3 block w-full rounded-2xl border border-dashed border-pink-200 bg-[#fff9fb] p-4 text-sm text-gray-500 disabled:cursor-not-allowed disabled:bg-gray-50 file:mr-4 file:rounded-full file:border-0 file:bg-[#ffe1eb] file:px-4 file:py-2 file:font-semibold file:text-[#d65f84]"
                 />
 
                 {newPreviewFiles.length > 0 && (

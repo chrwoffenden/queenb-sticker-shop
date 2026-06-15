@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -13,6 +14,7 @@ type Product = {
   salePrice?: number;
   promotionEnd?: string;
   slug: string;
+  lineStoreUrl?: string;
   isBestSeller: boolean;
 };
 
@@ -26,6 +28,7 @@ type SupabaseProduct = {
   sale_price: number | string | null;
   promotion_end: string | null;
   slug: string;
+  line_store_url: string | null;
   is_best_seller: boolean;
 };
 
@@ -41,7 +44,6 @@ type ProductCardProps = {
   showBestSellerBadge?: boolean;
   productInCart: boolean;
   onAddToCart: (product: Product) => void;
-  onViewDetails: (product: Product) => void;
 };
 
 const CART_STORAGE_KEY = "queenb-cart";
@@ -62,16 +64,25 @@ function formatDate(date?: string) {
 }
 
 function isPromotionActive(product: Product) {
-  if (!product.salePrice || !product.promotionEnd) {
+  if (
+    product.salePrice === undefined ||
+    !product.promotionEnd
+  ) {
     return false;
   }
 
-  const promotionEnd = new Date(`${product.promotionEnd}T23:59:59`);
+  const promotionEnd = new Date(
+    `${product.promotionEnd}T23:59:59`,
+  );
+
   return new Date() <= promotionEnd;
 }
 
 function getCurrentPrice(product: Product) {
-  if (isPromotionActive(product) && product.salePrice) {
+  if (
+    isPromotionActive(product) &&
+    product.salePrice !== undefined
+  ) {
     return product.salePrice;
   }
 
@@ -89,7 +100,21 @@ function createOrderNumber() {
   return `QB-${year}${month}${day}-${random}`;
 }
 
-function getProductUrl(slug: string) {
+function countLineRecipients(value: string) {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean).length;
+}
+
+function getProductUrl(
+  slug: string,
+  lineStoreUrl?: string,
+) {
+  if (lineStoreUrl) {
+    return lineStoreUrl;
+  }
+
   if (typeof window === "undefined") {
     return `/product/${slug}`;
   }
@@ -126,33 +151,31 @@ function ProductCard({
   showBestSellerBadge = false,
   productInCart,
   onAddToCart,
-  onViewDetails,
 }: ProductCardProps) {
   const promotionActive = isPromotionActive(product);
   const currentPrice = getCurrentPrice(product);
 
   return (
     <article
-      className={`relative overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
         showBestSellerBadge
           ? "border-2 border-amber-200"
           : "border border-pink-100"
       }`}
     >
-      <button
-        type="button"
-        onClick={() => onViewDetails(product)}
+      <Link
+        href={`/product/${product.slug}`}
         className="block aspect-square w-full overflow-hidden bg-pink-50"
-        aria-label={`ดูตัวอย่าง ${product.name}`}
+        aria-label={`ดูรายละเอียด ${product.name}`}
       >
         <img
           src={product.image}
           alt={product.name}
           className="h-full w-full object-cover transition duration-300 hover:scale-105"
         />
-      </button>
+      </Link>
 
-      <div className="p-4">
+      <div className="flex flex-1 flex-col p-3.5 md:p-4">
         {(promotionActive || showBestSellerBadge) && (
           <div className="mb-3 flex flex-wrap gap-2">
             {promotionActive && (
@@ -173,11 +196,14 @@ function ProductCard({
           {product.category === "Sticker" ? "LINE Sticker" : "LINE Theme"}
         </span>
 
-        <h3 className="mt-1 min-h-12 text-sm font-bold leading-6 md:text-base">
+        <Link
+          href={`/product/${product.slug}`}
+          className="mt-1 block min-h-0 text-sm font-bold leading-6 transition hover:text-[#d65f84] md:min-h-[48px] md:text-base"
+        >
           {product.name}
-        </h3>
+        </Link>
 
-        <div className="mt-2">
+        <div className="mt-2 min-h-0 md:min-h-[58px]">
           {promotionActive ? (
             <>
               <div className="flex flex-wrap items-center gap-2">
@@ -201,25 +227,39 @@ function ProductCard({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={() => onViewDetails(product)}
-          className="mt-4 w-full rounded-2xl border border-pink-200 bg-white px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-pink-50"
-        >
-          🖼️ ดูตัวอย่างเพิ่มเติม
-        </button>
+        <div className="mt-3 md:mt-auto md:pt-4">
+          {product.lineStoreUrl ? (
+            <a
+              href={product.lineStoreUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-full items-center justify-center rounded-2xl bg-[#06c755] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#05b84e]"
+            >
+              เปิดใน LINE Store
+            </a>
+          ) : (
+            <div
+              aria-hidden="true"
+              className="hidden h-[42px] w-full md:block"
+            />
+          )}
 
-        <button
-          type="button"
-          onClick={() => onAddToCart(product)}
-          className={`mt-2 w-full rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${
-            productInCart
-              ? "bg-green-100 text-green-700 hover:bg-green-200"
-              : "bg-[#ffe1eb] text-[#d65f84] hover:bg-[#ffd3e1]"
-          }`}
-        >
-          {productInCart ? "เพิ่มจำนวนอีก 1 ชุด +" : "เพิ่มลงตะกร้า"}
-        </button>
+          <button
+            type="button"
+            onClick={() => onAddToCart(product)}
+            className={`w-full rounded-2xl px-3 py-2.5 text-sm font-semibold transition ${
+              product.lineStoreUrl ? "mt-2" : ""
+            } ${
+              productInCart
+                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                : "bg-[#ffe1eb] text-[#d65f84] hover:bg-[#ffd3e1]"
+            }`}
+          >
+            {productInCart
+              ? "เพิ่มจำนวนอีก 1 ชุด +"
+              : "เพิ่มลงตะกร้า"}
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -235,11 +275,6 @@ export default function HomePage() {
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
-
-  const [selectedPreviewImage, setSelectedPreviewImage] = useState("");
 
   const [contactType, setContactType] =
     useState<ContactType>("qr-code");
@@ -272,6 +307,7 @@ export default function HomePage() {
             sale_price,
             promotion_end,
             slug,
+            line_store_url,
             is_best_seller
           `,
         )
@@ -303,6 +339,7 @@ export default function HomePage() {
             : Number(product.sale_price),
         promotionEnd: product.promotion_end ?? undefined,
         slug: product.slug,
+        lineStoreUrl: product.line_store_url ?? undefined,
         isBestSeller: product.is_best_seller,
       }));
 
@@ -339,15 +376,40 @@ export default function HomePage() {
   }, [cart, cartLoaded]);
 
   useEffect(() => {
+    if (!cartLoaded || productsLoading) return;
+
+    setCart((currentCart) =>
+      currentCart
+        .map((cartItem) => {
+          const latestProduct = products.find(
+            (product) => product.id === cartItem.id,
+          );
+
+          if (!latestProduct) {
+            return null;
+          }
+
+          return {
+            ...latestProduct,
+            quantity: cartItem.quantity,
+          };
+        })
+        .filter(
+          (item): item is CartItem => item !== null,
+        ),
+    );
+  }, [cartLoaded, products, productsLoading]);
+
+  useEffect(() => {
     const hasOpenModal =
-      isCartOpen || isCheckoutOpen || selectedProduct !== null;
+      isCartOpen || isCheckoutOpen;
 
     document.body.style.overflow = hasOpenModal ? "hidden" : "";
 
     return () => {
       document.body.style.overflow = "";
     };
-  }, [isCartOpen, isCheckoutOpen, selectedProduct]);
+  }, [isCartOpen, isCheckoutOpen]);
 
   const totalQuantity = useMemo(() => {
     return cart.reduce((total, item) => total + item.quantity, 0);
@@ -358,6 +420,14 @@ export default function HomePage() {
       return total + getCurrentPrice(item) * item.quantity;
     }, 0);
   }, [cart]);
+
+  const recipientLineCount = useMemo(() => {
+    return countLineRecipients(recipientInfo);
+  }, [recipientInfo]);
+
+  const recipientCountMatches =
+    contactType !== "line-id" ||
+    recipientLineCount === totalQuantity;
 
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
@@ -420,13 +490,34 @@ export default function HomePage() {
     );
   };
 
-  const clearCart = () => {
+  const resetOrderState = () => {
     setCart([]);
     setIsCartOpen(false);
     setIsCheckoutOpen(false);
     setRecipientInfo("");
     setNote("");
     setCopyStatus("idle");
+    setOrderNumber("");
+  };
+
+  const clearCart = () => {
+    const confirmed = window.confirm(
+      "ต้องการล้างสินค้าทั้งหมดออกจากตะกร้าใช่ไหม?",
+    );
+
+    if (!confirmed) return;
+
+    resetOrderState();
+  };
+
+  const clearCartAfterOrder = () => {
+    const confirmed = window.confirm(
+      "ส่งรายการให้ร้านเรียบร้อยแล้ว และต้องการล้างตะกร้าใช่ไหม?",
+    );
+
+    if (!confirmed) return;
+
+    resetOrderState();
   };
 
   const isInCart = (productId: number) => {
@@ -437,19 +528,6 @@ export default function HomePage() {
     return (
       cart.find((item) => item.id === productId)?.quantity ?? 0
     );
-  };
-
-  const openProductPreview = (product: Product) => {
-    setSelectedProduct(product);
-
-    setSelectedPreviewImage(
-      product.previewImages[0] || product.image,
-    );
-  };
-
-  const closeProductPreview = () => {
-    setSelectedProduct(null);
-    setSelectedPreviewImage("");
   };
 
   const openCheckout = () => {
@@ -472,7 +550,7 @@ export default function HomePage() {
             ? `🎀 โปรโมชั่นหมดวันที่: ${formatDate(
                 item.promotionEnd,
               )}`
-            : "🎀 โปรโมชั่น: ไม่มี";
+            : "🎀 โปรโมชั่น: ไม่มีหรือหมดอายุแล้ว";
 
         return [
           `🌷 รายการที่ ${index + 1}`,
@@ -485,7 +563,10 @@ export default function HomePage() {
           `💖 ราคาต่อชุด: ${formatPrice(unitPrice)} บาท`,
           `🔢 จำนวน: ${item.quantity} ชุด`,
           `💰 รวมรายการนี้: ${formatPrice(itemTotal)} บาท`,
-          `🔗 ลิงก์สินค้า: ${getProductUrl(item.slug)}`,
+          `🔗 ลิงก์สินค้า: ${getProductUrl(
+            item.slug,
+            item.lineStoreUrl,
+          )}`,
           promotionText,
         ].join("\n");
       })
@@ -534,7 +615,7 @@ export default function HomePage() {
   const handleCopyOrder = async () => {
     if (
       contactType === "line-id" &&
-      !recipientInfo.trim()
+      recipientLineCount !== totalQuantity
     ) {
       setCopyStatus("error");
       return;
@@ -550,6 +631,11 @@ export default function HomePage() {
   };
 
   const handleOpenLine = () => {
+    if (copyStatus !== "copied") {
+      setCopyStatus("error");
+      return;
+    }
+
     window.open(
       SHOP_LINE_URL,
       "_blank",
@@ -665,6 +751,10 @@ export default function HomePage() {
                 <p className="mt-2 text-sm text-gray-500">
                   ลายยอดนิยมที่ลูกค้าเลือกซื้อบ่อย
                 </p>
+
+                <p className="mt-2 text-xs text-amber-600 md:hidden">
+                  เลื่อนซ้าย–ขวาเพื่อดูสินค้าเพิ่มเติม
+                </p>
               </div>
 
               <span className="hidden text-sm text-gray-500 sm:block">
@@ -672,16 +762,19 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible lg:grid-cols-4">
               {bestSellerProducts.map((product) => (
-                <ProductCard
+                <div
                   key={`best-${product.id}`}
-                  product={product}
-                  showBestSellerBadge
-                  productInCart={isInCart(product.id)}
-                  onAddToCart={addToCart}
-                  onViewDetails={openProductPreview}
-                />
+                  className="w-[78vw] max-w-[280px] shrink-0 snap-start md:w-auto md:max-w-none"
+                >
+                  <ProductCard
+                    product={product}
+                    showBestSellerBadge
+                    productInCart={isInCart(product.id)}
+                    onAddToCart={addToCart}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -708,14 +801,13 @@ export default function HomePage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
               productInCart={isInCart(product.id)}
               onAddToCart={addToCart}
-              onViewDetails={openProductPreview}
             />
           ))}
         </div>
@@ -785,195 +877,6 @@ export default function HomePage() {
             ฿{formatPrice(totalPrice)}
           </span>
         </button>
-      )}
-
-      {selectedProduct && (
-        <div className="fixed inset-0 z-[80]">
-          <button
-            type="button"
-            aria-label="ปิดรายละเอียดสินค้า"
-            onClick={closeProductPreview}
-            className="absolute inset-0 bg-black/50"
-          />
-
-          <div className="absolute bottom-0 left-0 right-0 max-h-[94vh] overflow-y-auto rounded-t-[32px] bg-white p-5 shadow-2xl md:bottom-auto md:left-1/2 md:right-auto md:top-1/2 md:w-[900px] md:max-w-[calc(100%-40px)] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-[32px] md:p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-semibold text-[#df7796]">
-                  Product Preview
-                </p>
-
-                <h2 className="mt-1 text-xl font-bold">
-                  {selectedProduct.name}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={closeProductPreview}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-lg transition hover:bg-gray-200"
-                aria-label="ปิด"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-5 grid gap-6 md:grid-cols-[1.15fr_0.85fr]">
-              <div>
-                <div className="overflow-hidden rounded-3xl bg-pink-50">
-                  <img
-                    src={
-                      selectedPreviewImage ||
-                      selectedProduct.image
-                    }
-                    alt={selectedProduct.name}
-                    className="aspect-square h-auto w-full object-contain"
-                  />
-                </div>
-
-                <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                  {selectedProduct.previewImages.map(
-                    (previewImage, index) => (
-                      <button
-                        key={`${previewImage}-${index}`}
-                        type="button"
-                        onClick={() =>
-                          setSelectedPreviewImage(
-                            previewImage,
-                          )
-                        }
-                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 transition ${
-                          selectedPreviewImage ===
-                          previewImage
-                            ? "border-[#df6f91]"
-                            : "border-transparent"
-                        }`}
-                      >
-                        <img
-                          src={previewImage}
-                          alt={`${selectedProduct.name} ตัวอย่าง ${
-                            index + 1
-                          }`}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ),
-                  )}
-                </div>
-              </div>
-
-              <div className="flex flex-col">
-                <div className="rounded-3xl bg-[#fff7fa] p-5">
-                  <div className="flex flex-wrap gap-2">
-                    {isPromotionActive(
-                      selectedProduct,
-                    ) && (
-                      <span className="rounded-full bg-[#ef7898] px-3 py-1 text-xs font-bold text-white">
-                        🎀 PROMO
-                      </span>
-                    )}
-
-                    {selectedProduct.isBestSeller && (
-                      <span className="rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-white">
-                        🔥 BEST SELLER
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-4 text-sm font-medium text-[#d47691]">
-                    {selectedProduct.category ===
-                    "Sticker"
-                      ? "LINE Sticker"
-                      : "LINE Theme"}
-                  </p>
-
-                  <h3 className="mt-1 text-2xl font-bold text-[#4f4144]">
-                    {selectedProduct.name}
-                  </h3>
-
-                  <div className="mt-5 flex flex-wrap items-center gap-3">
-                    <p className="text-3xl font-bold text-[#df6388]">
-                      ฿
-                      {formatPrice(
-                        getCurrentPrice(
-                          selectedProduct,
-                        ),
-                      )}
-                    </p>
-
-                    {isPromotionActive(
-                      selectedProduct,
-                    ) && (
-                      <span className="text-base text-gray-400 line-through">
-                        ฿
-                        {formatPrice(
-                          selectedProduct.regularPrice,
-                        )}
-                      </span>
-                    )}
-                  </div>
-
-                  {isPromotionActive(
-                    selectedProduct,
-                  ) && (
-                    <p className="mt-2 text-xs text-gray-500">
-                      หมดโปรโมชั่น{" "}
-                      {formatDate(
-                        selectedProduct.promotionEnd,
-                      )}
-                    </p>
-                  )}
-
-                  {isInCart(selectedProduct.id) && (
-                    <div className="mt-5 rounded-2xl bg-green-50 p-4 text-sm font-semibold text-green-700">
-                      สินค้านี้อยู่ในตะกร้าแล้ว{" "}
-                      {getCartQuantity(
-                        selectedProduct.id,
-                      )}{" "}
-                      ชุด
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 rounded-3xl border border-pink-100 p-5">
-                  <p className="font-bold">
-                    รายละเอียดการสั่งซื้อ
-                  </p>
-
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    ลูกค้าสามารถเพิ่มสินค้าลายเดียวกันหลายชุด
-                    เพื่อส่งให้ผู้รับหลาย LINE ID ได้
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      addToCart(selectedProduct)
-                    }
-                    className="mt-5 w-full rounded-2xl bg-[#df6f91] px-4 py-3.5 font-semibold text-white transition hover:bg-[#d35d82]"
-                  >
-                    {isInCart(selectedProduct.id)
-                      ? "เพิ่มจำนวนอีก 1 ชุด +"
-                      : "เพิ่มลงตะกร้า"}
-                  </button>
-
-                  {isInCart(selectedProduct.id) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        closeProductPreview();
-                        setIsCartOpen(true);
-                      }}
-                      className="mt-3 w-full rounded-2xl border border-pink-200 bg-white px-4 py-3.5 font-semibold text-[#d65f84] transition hover:bg-pink-50"
-                    >
-                      🛒 เปิดตะกร้าสินค้า
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {isCartOpen && (
@@ -1199,7 +1102,10 @@ export default function HomePage() {
                     <div className="mt-3 rounded-xl bg-[#fff8fa] p-3 text-xs leading-6 text-gray-600">
                       <p className="break-all">
                         ลิงก์สินค้า:{" "}
-                        {getProductUrl(item.slug)}
+                        {getProductUrl(
+                          item.slug,
+                          item.lineStoreUrl,
+                        )}
                       </p>
 
                       <p>
@@ -1291,10 +1197,37 @@ export default function HomePage() {
                     className="mt-4 w-full resize-none rounded-2xl border border-pink-100 px-4 py-3 outline-none transition focus:border-[#e27898] focus:ring-2 focus:ring-pink-100"
                   />
 
-                  <p className="mt-2 text-xs text-gray-500">
-                    ควรกรอกข้อมูลผู้รับให้ครบตามจำนวนสินค้า{" "}
-                    {totalQuantity} ชุด
-                  </p>
+                  <div
+                    className={`mt-3 rounded-2xl px-4 py-3 text-sm ${
+                      recipientCountMatches
+                        ? "bg-green-50 text-green-700"
+                        : "bg-amber-50 text-amber-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span>
+                        กรอกแล้ว {recipientLineCount} คน
+                      </span>
+
+                      <span className="font-semibold">
+                        ต้องการ {totalQuantity} คน
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-xs leading-5">
+                      {recipientCountMatches
+                        ? "จำนวน LINE ID ตรงกับจำนวนชุดสินค้าแล้ว ✓"
+                        : recipientLineCount < totalQuantity
+                          ? `ยังขาดอีก ${
+                              totalQuantity -
+                              recipientLineCount
+                            } คน`
+                          : `กรอกเกินมา ${
+                              recipientLineCount -
+                              totalQuantity
+                            } คน`}
+                    </p>
+                  </div>
                 </>
               ) : (
                 <div className="mt-4 rounded-2xl bg-[#f4fff5] p-4 text-sm leading-6 text-[#4f7555]">
@@ -1326,16 +1259,23 @@ export default function HomePage() {
             {copyStatus === "error" && (
               <div className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-center text-sm text-red-600">
                 {contactType === "line-id" &&
-                !recipientInfo.trim()
-                  ? "กรุณากรอก LINE ID ของผู้รับก่อน"
-                  : "ไม่สามารถคัดลอกรายการได้"}
+                recipientLineCount !== totalQuantity
+                  ? `จำนวน LINE ID ต้องเท่ากับ ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
+                  : copyStatus !== "copied"
+                    ? "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"
+                    : "ไม่สามารถดำเนินการได้"}
               </div>
             )}
 
             <button
               type="button"
               onClick={handleCopyOrder}
-              className="mt-5 w-full rounded-2xl bg-[#df6f91] px-4 py-3.5 font-semibold text-white transition hover:bg-[#d35d82]"
+              disabled={!recipientCountMatches}
+              className={`mt-5 w-full rounded-2xl px-4 py-3.5 font-semibold text-white transition ${
+                recipientCountMatches
+                  ? "bg-[#df6f91] hover:bg-[#d35d82]"
+                  : "cursor-not-allowed bg-gray-300"
+              }`}
             >
               📋 คัดลอกรายการสั่งซื้อ
             </button>
@@ -1343,10 +1283,25 @@ export default function HomePage() {
             <button
               type="button"
               onClick={handleOpenLine}
-              className="mt-3 w-full rounded-2xl bg-[#21c45b] px-4 py-3.5 font-semibold text-white transition hover:bg-[#1caf50]"
+              disabled={copyStatus !== "copied"}
+              className={`mt-3 w-full rounded-2xl px-4 py-3.5 font-semibold text-white transition ${
+                copyStatus === "copied"
+                  ? "bg-[#21c45b] hover:bg-[#1caf50]"
+                  : "cursor-not-allowed bg-gray-300"
+              }`}
             >
               💬 เปิดแชท LINE ร้าน
             </button>
+            {copyStatus === "copied" && (
+              <button
+                type="button"
+                onClick={clearCartAfterOrder}
+                className="mt-3 w-full rounded-2xl border border-green-200 bg-green-50 px-4 py-3.5 font-semibold text-green-700 transition hover:bg-green-100"
+              >
+                ✓ ส่งรายการแล้ว ล้างตะกร้า
+              </button>
+            )}
+
 
             <button
               type="button"

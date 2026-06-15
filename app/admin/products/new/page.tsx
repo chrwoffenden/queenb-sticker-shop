@@ -17,6 +17,7 @@ type UploadResult = {
 };
 
 const STORAGE_BUCKET = "product-images";
+const MAX_PREVIEW_IMAGES = 2;
 
 function createSafeFileName(file: File) {
   const extension =
@@ -254,6 +255,10 @@ export default function NewProductPage() {
 
     if (!coverFile) {
       return "กรุณาเลือกรูปปกสินค้า";
+    }
+
+    if (previewFiles.length > MAX_PREVIEW_IMAGES) {
+      return `เลือกรูปพรีวิวได้สูงสุด ${MAX_PREVIEW_IMAGES} รูป`;
     }
 
     const allFiles = [
@@ -714,10 +719,26 @@ export default function NewProductPage() {
                   accept="image/png,image/jpeg,image/webp"
                   multiple
                   onChange={(event) => {
-                    const files =
-                      Array.from(
-                        event.target.files ?? [],
+                    const files = Array.from(
+                      event.target.files ?? [],
+                    );
+
+                    if (
+                      files.length >
+                      MAX_PREVIEW_IMAGES
+                    ) {
+                      setPreviewFiles(
+                        files.slice(
+                          0,
+                          MAX_PREVIEW_IMAGES,
+                        ),
                       );
+                      setMessage(
+                        `เลือกได้สูงสุด ${MAX_PREVIEW_IMAGES} รูป ระบบเก็บไว้เฉพาะ ${MAX_PREVIEW_IMAGES} รูปแรก`,
+                      );
+                      event.target.value = "";
+                      return;
+                    }
 
                     setPreviewFiles(files);
                     setMessage("");
@@ -726,7 +747,19 @@ export default function NewProductPage() {
                 />
 
                 <p className="mt-2 text-xs text-gray-500">
-                  เลือกได้หลายรูป ระบบจะเปลี่ยนชื่อไฟล์ภาษาไทยเป็นชื่อปลอดภัยอัตโนมัติ
+                  เลือกได้สูงสุด 2 รูป ไม่รวมรูปปกสินค้า ระบบจะเปลี่ยนชื่อไฟล์ภาษาไทยเป็นชื่อปลอดภัยอัตโนมัติ
+                </p>
+
+                <p
+                  className={`mt-2 text-xs font-semibold ${
+                    previewFiles.length ===
+                    MAX_PREVIEW_IMAGES
+                      ? "text-green-600"
+                      : "text-[#d47691]"
+                  }`}
+                >
+                  เลือกแล้ว {previewFiles.length} /{" "}
+                  {MAX_PREVIEW_IMAGES} รูป
                 </p>
 
                 {previewFiles.length > 0 && (
