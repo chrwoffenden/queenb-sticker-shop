@@ -38,6 +38,7 @@ type CartItem = Product & {
 
 type ContactType = "line-id" | "qr-code";
 type CopyStatus = "idle" | "copied" | "error";
+type CategoryFilter = "all" | "Sticker" | "Theme";
 
 type ProductCardProps = {
   product: Product;
@@ -157,7 +158,7 @@ function ProductCard({
 
   return (
     <article
-      className={`relative flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-[26px] bg-white shadow-[0_8px_24px_rgba(148,93,112,0.08)] transition hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(148,93,112,0.12)] ${
         showBestSellerBadge
           ? "border-2 border-amber-200"
           : "border border-pink-100"
@@ -179,13 +180,13 @@ function ProductCard({
         {(promotionActive || showBestSellerBadge) && (
           <div className="mb-3 flex flex-wrap gap-2">
             {promotionActive && (
-              <span className="rounded-full bg-[#ef7898] px-3 py-1 text-[10px] font-bold text-white shadow-sm md:text-xs">
+              <span className="rounded-full bg-[#fff0f5] px-2.5 py-1 text-[10px] font-bold text-[#d95f85] md:text-xs">
                 🎀 PROMO
               </span>
             )}
 
             {showBestSellerBadge && (
-              <span className="rounded-full bg-amber-400 px-3 py-1 text-[10px] font-bold text-white shadow-sm md:text-xs">
+              <span className="rounded-full bg-[#fff5d9] px-2.5 py-1 text-[10px] font-bold text-[#b98212] md:text-xs">
                 🔥 BEST SELLER
               </span>
             )}
@@ -227,21 +228,16 @@ function ProductCard({
           )}
         </div>
 
-        <div className="mt-3 md:mt-auto md:pt-4">
-          {product.lineStoreUrl ? (
+        <div className="mt-auto pt-4">
+          {product.lineStoreUrl && (
             <a
               href={product.lineStoreUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full items-center justify-center rounded-2xl bg-[#06c755] px-3 py-2.5 text-sm font-semibold text-white transition hover:bg-[#05b84e]"
+              className="flex w-full items-center justify-center rounded-2xl border border-[#bde9cb] bg-[#f3fff7] px-3 py-2.5 text-sm font-semibold text-[#179a49] transition hover:bg-[#e8fff0]"
             >
               เปิดใน LINE Store
             </a>
-          ) : (
-            <div
-              aria-hidden="true"
-              className="hidden h-[42px] w-full md:block"
-            />
           )}
 
           <button
@@ -251,8 +247,8 @@ function ProductCard({
               product.lineStoreUrl ? "mt-2" : ""
             } ${
               productInCart
-                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                : "bg-[#ffe1eb] text-[#d65f84] hover:bg-[#ffd3e1]"
+                ? "bg-[#e9f9ef] text-[#18834a] hover:bg-[#dcf4e5]"
+                : "bg-[#df6f91] text-white hover:bg-[#d35d82]"
             }`}
           >
             {productInCart
@@ -285,9 +281,20 @@ export default function HomePage() {
   const [copyStatus, setCopyStatus] =
     useState<CopyStatus>("idle");
 
+  const [categoryFilter, setCategoryFilter] =
+    useState<CategoryFilter>("all");
+
   const bestSellerProducts = products.filter(
     (product) => product.isBestSeller === true,
   );
+
+  const filteredProducts =
+    categoryFilter === "all"
+      ? products
+      : products.filter(
+          (product) =>
+            product.category === categoryFilter,
+        );
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -645,64 +652,153 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#fff9f5] text-[#4f4144]">
-      <header className="sticky top-0 z-40 border-b border-pink-100 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-[#e27698]">
-              queenb.sticker
-            </h1>
+      <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
+          <a href="#home" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff1f5] text-xl shadow-sm">
+              ♡
+            </div>
 
-            <p className="text-xs text-gray-500">
-              Cute stickers & LINE themes ♡
-            </p>
-          </div>
+            <div>
+              <h1 className="text-lg font-bold text-[#df6f91] md:text-xl">
+                queenb.sticker
+              </h1>
 
-          <nav className="hidden gap-6 text-sm font-medium md:flex">
-            <a href="#home" className="hover:text-pink-500">
+              <p className="text-[11px] text-[#806d72] md:text-xs">
+                Cute stickers & LINE themes
+              </p>
+            </div>
+          </a>
+
+          <nav className="hidden items-center gap-6 text-sm font-medium text-[#6f5c62] md:flex">
+            <a href="#home" className="transition hover:text-[#df6f91]">
               หน้าแรก
             </a>
 
-            <a href="#best-seller" className="hover:text-pink-500">
+            <a href="#best-seller" className="transition hover:text-[#df6f91]">
               สินค้าขายดี
             </a>
 
-            <a href="#products" className="hover:text-pink-500">
+            <a href="#products" className="transition hover:text-[#df6f91]">
               สินค้าทั้งหมด
             </a>
 
-            <a href="#how-to-order" className="hover:text-pink-500">
+            <a href="#how-to-order" className="transition hover:text-[#df6f91]">
               วิธีสั่งซื้อ
             </a>
           </nav>
+
+          <button
+            type="button"
+            onClick={() => setIsCartOpen(true)}
+            disabled={!cartLoaded || cart.length === 0}
+            className={`relative rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
+              cartLoaded && cart.length > 0
+                ? "bg-[#fff1f5] text-[#d65f84] hover:bg-[#ffe5ee]"
+                : "cursor-not-allowed bg-gray-100 text-gray-400"
+            }`}
+          >
+            🛒 ตะกร้า
+            {totalQuantity > 0 && (
+              <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full bg-[#df6f91] px-1.5 py-0.5 text-xs text-white">
+                {totalQuantity}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
       <section
         id="home"
-        className="mx-auto max-w-6xl px-4 pb-10 pt-10 md:pb-16 md:pt-16"
+        className="mx-auto max-w-6xl px-4 pb-8 pt-6 md:pb-16 md:pt-12"
       >
-        <div className="overflow-hidden rounded-[32px] bg-gradient-to-br from-[#ffe0eb] via-[#fff0e9] to-[#fff7d9] px-6 py-12 text-center shadow-sm md:px-12 md:py-20">
-          <span className="inline-flex rounded-full bg-white/80 px-4 py-2 text-xs font-semibold text-[#d4678b]">
-            Welcome to our cute shop ♡
-          </span>
+        <div className="overflow-hidden rounded-[30px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff5e8] p-5 shadow-sm md:rounded-[34px] md:p-10">
+          <div className="grid items-center gap-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8">
+            <div className="text-center md:text-left">
+              <span className="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#d4678b] shadow-sm">
+                LINE Stickers & Themes ♡
+              </span>
 
-          <h2 className="mx-auto mt-5 max-w-2xl text-3xl font-bold leading-tight text-[#724d5b] md:text-5xl">
-            เติมความน่ารักให้ทุกแชท
-            <br />
-            ด้วยสติกเกอร์และธีม LINE
-          </h2>
+              <h2 className="mt-4 text-[28px] font-bold leading-tight text-[#654d56] md:mt-5 md:text-5xl">
+                เติมความน่ารัก
+                <br />
+                ให้ทุกแชทของคุณ
+              </h2>
 
-          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-[#806d72] md:text-base">
-            เลือกลายที่ชอบ เพิ่มจำนวนตามผู้รับ
-            แล้วส่งรายการสั่งซื้อผ่านแชท LINE ร้านได้ง่าย ๆ
-          </p>
+              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#806d72] md:mx-0 md:mt-5 md:text-base md:leading-7">
+                เลือกสติกเกอร์และธีม LINE ลายน่ารัก
+                เพิ่มจำนวนตามผู้รับ
+                แล้วส่งรายการสั่งซื้อผ่านแชท LINE ร้านได้ง่าย ๆ
+              </p>
 
-          <a
-            href="#best-seller"
-            className="mt-7 inline-flex rounded-full bg-[#e27698] px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d8668a]"
-          >
-            ดูสินค้าขายดี 🔥
-          </a>
+              <div className="mt-6 flex flex-col items-center gap-3 md:mt-7 md:flex-row md:justify-start">
+                <a
+                  href="#products"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[#df6f91] px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d35d82] sm:w-auto"
+                >
+                  เลือกซื้อสินค้า
+                </a>
+
+                <a
+                  href={SHOP_LINE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hidden items-center justify-center rounded-full border border-[#bde9cb] bg-white px-7 py-3 text-sm font-semibold text-[#19a84d] transition hover:bg-[#f2fff6] md:inline-flex"
+                >
+                  แอด LINE ร้าน
+                </a>
+
+                <a
+                  href={SHOP_LINE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-[#19a84d] underline-offset-4 hover:underline md:hidden"
+                >
+                  หรือแอด LINE ร้าน
+                </a>
+              </div>
+            </div>
+
+            <div className="relative mx-auto w-full max-w-md">
+              <div className="absolute -left-3 top-8 h-20 w-20 rounded-full bg-[#ffdce8] blur-2xl" />
+              <div className="absolute -right-3 bottom-8 h-24 w-24 rounded-full bg-[#fff0be] blur-2xl" />
+
+              <div className="relative rounded-[26px] bg-white/70 p-3 shadow-sm backdrop-blur md:grid md:grid-cols-2 md:gap-3 md:rounded-[30px]">
+                {products.length > 0 ? (
+                  <>
+                    <a
+                      href={`/product/${products[0].slug}`}
+                      className="block overflow-hidden rounded-2xl bg-white shadow-sm md:col-span-2"
+                    >
+                      <img
+                        src={products[0].image}
+                        alt={products[0].name}
+                        className="aspect-[4/3] w-full object-cover md:aspect-[2/1]"
+                      />
+                    </a>
+
+                    {products.slice(1, 3).map((product) => (
+                      <a
+                        key={`hero-${product.id}`}
+                        href={`/product/${product.slug}`}
+                        className="hidden overflow-hidden rounded-2xl bg-white shadow-sm md:block"
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="aspect-square w-full object-cover"
+                        />
+                      </a>
+                    ))}
+                  </>
+                ) : (
+                  <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-[#fff7fa] text-sm text-[#b28f9a] md:col-span-2">
+                    Cute products are coming ♡
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -762,11 +858,11 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-3 md:items-stretch md:gap-6 md:overflow-visible lg:grid-cols-4">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-[repeat(auto-fit,minmax(240px,320px))] md:justify-center md:gap-6 md:overflow-visible">
               {bestSellerProducts.map((product) => (
                 <div
                   key={`best-${product.id}`}
-                  className="w-[78vw] max-w-[280px] shrink-0 snap-start md:w-auto md:max-w-none"
+                  className="w-[78vw] max-w-[280px] shrink-0 snap-start md:w-full md:max-w-[320px]"
                 >
                   <ProductCard
                     product={product}
@@ -785,7 +881,7 @@ export default function HomePage() {
         id="products"
         className="mx-auto max-w-6xl px-4 pb-28"
       >
-        <div className="mb-7 flex items-end justify-between">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-semibold text-[#df7796]">
               Our Products
@@ -794,21 +890,85 @@ export default function HomePage() {
             <h2 className="mt-1 text-2xl font-bold md:text-3xl">
               เลือกลายที่คุณชอบ
             </h2>
+
+            <p className="mt-2 text-sm text-gray-500">
+              กดที่รูปหรือชื่อสินค้าเพื่อดูรายละเอียดเพิ่มเติม
+            </p>
           </div>
 
           <span className="text-sm text-gray-500">
-            {products.length} รายการ
+            {filteredProducts.length} รายการ
           </span>
         </div>
 
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
+          {[
+            ["all", "ทั้งหมด"],
+            ["Sticker", "LINE Sticker"],
+            ["Theme", "LINE Theme"],
+          ].map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                setCategoryFilter(
+                  value as CategoryFilter,
+                )
+              }
+              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition ${
+                categoryFilter === value
+                  ? "bg-[#df6f91] text-white shadow-sm"
+                  : "border border-[#f2d5df] bg-white text-[#7d666e] hover:bg-[#fff1f5]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
               productInCart={isInCart(product.id)}
               onAddToCart={addToCart}
             />
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="grid gap-4 md:grid-cols-3">
+          {[
+            [
+              "💬",
+              "สั่งซื้อผ่าน LINE",
+              "คัดลอกรายการแล้วส่งให้ร้านผ่านแชทได้ทันที",
+            ],
+            [
+              "🎁",
+              "ส่งให้ตัวเองหรือเพื่อน",
+              "รองรับหลายผู้รับด้วย LINE ID หรือ QR Code",
+            ],
+            [
+              "🌷",
+              "ร้านดูแลทุกขั้นตอน",
+              "สอบถามรายละเอียดสินค้าและการสั่งซื้อได้ทางแชท",
+            ],
+          ].map(([icon, title, description]) => (
+            <div
+              key={title}
+              className="rounded-3xl border border-[#f7dce5] bg-white p-6 shadow-sm"
+            >
+              <div className="text-3xl">{icon}</div>
+              <h3 className="mt-4 font-bold text-[#5c4a50]">
+                {title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-gray-500">
+                {description}
+              </p>
+            </div>
           ))}
         </div>
       </section>
@@ -1316,6 +1476,45 @@ export default function HomePage() {
           </div>
         </div>
       )}
+      <footer className="mt-4 border-t border-[#f7dce5] bg-[#fff1f5] px-4 py-10">
+        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-end">
+          <div>
+            <h2 className="text-xl font-bold text-[#df6f91]">
+              queenb.sticker
+            </h2>
+            <p className="mt-2 text-sm text-[#806d72]">
+              Cute LINE stickers & themes ♡
+            </p>
+            <p className="mt-4 max-w-md text-sm leading-6 text-[#8d777e]">
+              ร้านสติกเกอร์และธีม LINE ลายน่ารัก
+              สั่งซื้อและสอบถามรายละเอียดผ่านแชท LINE ร้าน
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3 md:justify-end">
+            <a
+              href={SHOP_LINE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full bg-[#06c755] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#05b84e]"
+            >
+              LINE ร้าน
+            </a>
+
+            <a
+              href="#how-to-order"
+              className="rounded-full border border-[#e9cbd5] bg-white px-5 py-2.5 text-sm font-semibold text-[#7d666e] transition hover:bg-[#fff8fa]"
+            >
+              วิธีสั่งซื้อ
+            </a>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-6xl border-t border-[#efcfd9] pt-5 text-xs text-[#9b838b]">
+          © 2026 queenb.sticker
+        </div>
+      </footer>
+
     </main>
   );
 }
