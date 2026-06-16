@@ -47,6 +47,23 @@ function formatDate(date: string | null) {
   }).format(new Date(`${date}T00:00:00`));
 }
 
+function getPromotionStatus(product: ProductRow) {
+  if (
+    product.sale_price === null ||
+    product.promotion_end === null
+  ) {
+    return "none";
+  }
+
+  const promotionEnd = new Date(
+    `${product.promotion_end}T23:59:59`,
+  );
+
+  return promotionEnd >= new Date()
+    ? "active"
+    : "expired";
+}
+
 export default function AdminProductsPage() {
   const router = useRouter();
 
@@ -321,11 +338,13 @@ export default function AdminProductsPage() {
   const sortedProducts = [...filteredProducts].sort(
     (productA, productB) => {
       const activePriceA =
+        getPromotionStatus(productA) === "active" &&
         productA.sale_price !== null
           ? Number(productA.sale_price)
           : Number(productA.regular_price);
 
       const activePriceB =
+        getPromotionStatus(productB) === "active" &&
         productB.sale_price !== null
           ? Number(productB.sale_price)
           : Number(productB.regular_price);
@@ -408,32 +427,38 @@ export default function AdminProductsPage() {
   ).length;
 
   return (
-    <main className="min-h-screen bg-[#fff8f5]">
-      <header className="border-b border-pink-100 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-[#df6f91]">
-              queenb.sticker
-            </p>
+    <main className="min-h-screen bg-[#fff9f5] text-[#4f4144]">
+      <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff1f5] text-xl shadow-sm">
+              ♡
+            </div>
 
-            <h1 className="text-xl font-bold text-[#4f4144]">
-              จัดการสินค้า
-            </h1>
+            <div>
+              <p className="text-sm font-bold text-[#df6f91]">
+                queenb.sticker
+              </p>
+
+              <h1 className="text-lg font-bold text-[#4f4144]">
+                จัดการสินค้า
+              </h1>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => router.push("/")}
-              className="rounded-2xl border border-pink-200 bg-white px-4 py-2 text-sm font-semibold text-[#d65f84] transition hover:bg-pink-50"
+              className="hidden rounded-2xl border border-[#f2d5df] bg-white px-4 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5] sm:block"
             >
-              🏠 ดูหน้าร้าน
+              ดูหน้าร้าน
             </button>
 
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-2xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
+              className="rounded-2xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-50"
             >
               ออกจากระบบ
             </button>
@@ -441,16 +466,20 @@ export default function AdminProductsPage() {
         </div>
       </header>
 
-      <section className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <section className="mx-auto max-w-7xl px-4 py-6 md:py-8">
+        <div className="flex flex-col gap-4 rounded-[30px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff5e8] p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between md:p-7">
           <div>
-            <p className="text-sm text-gray-500">
-              สินค้าทั้งหมดในร้าน
+            <p className="text-sm font-semibold text-[#df6f91]">
+              Product Management
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[#4f4144]">
-              {sortedProducts.length} จาก {products.length} รายการ
+            <h2 className="mt-1 text-2xl font-bold md:text-3xl">
+              สินค้าในร้านของคุณ
             </h2>
+
+            <p className="mt-2 text-sm text-[#806d72]">
+              แสดงผล {sortedProducts.length} จาก {products.length} รายการ
+            </p>
           </div>
 
           <button
@@ -458,14 +487,14 @@ export default function AdminProductsPage() {
             onClick={() =>
               router.push("/admin/products/new")
             }
-            className="rounded-2xl bg-[#df6f91] px-5 py-3 font-semibold text-white transition hover:bg-[#d35d82]"
+            className="rounded-2xl bg-[#df6f91] px-5 py-3 font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#d35d82]"
           >
             + เพิ่มสินค้าใหม่
           </button>
         </div>
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          <article className="rounded-[24px] border border-pink-100 bg-white p-5 shadow-sm">
+        <section className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+          <article className="rounded-[24px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] md:p-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">📦</span>
               <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-semibold text-[#d76588]">
@@ -482,7 +511,7 @@ export default function AdminProductsPage() {
             </p>
           </article>
 
-          <article className="rounded-[24px] border border-green-100 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] md:p-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">✅</span>
               <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
@@ -499,7 +528,7 @@ export default function AdminProductsPage() {
             </p>
           </article>
 
-          <article className="rounded-[24px] border border-gray-200 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] md:p-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">🙈</span>
               <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">
@@ -516,7 +545,7 @@ export default function AdminProductsPage() {
             </p>
           </article>
 
-          <article className="rounded-[24px] border border-amber-100 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] md:p-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">🔥</span>
               <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
@@ -533,7 +562,7 @@ export default function AdminProductsPage() {
             </p>
           </article>
 
-          <article className="rounded-[24px] border border-rose-100 bg-white p-5 shadow-sm">
+          <article className="rounded-[24px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] md:p-5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">🎀</span>
               <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700">
@@ -551,7 +580,7 @@ export default function AdminProductsPage() {
           </article>
         </section>
 
-        <section className="mt-8 rounded-[28px] border border-pink-100 bg-white p-5 shadow-sm">
+        <section className="mt-6 rounded-[28px] border border-[#f7dce5] bg-white p-4 shadow-sm md:p-5">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
             <div className="lg:col-span-2">
               <label
@@ -569,7 +598,7 @@ export default function AdminProductsPage() {
                   setSearchText(event.target.value)
                 }
                 placeholder="พิมพ์ชื่อสินค้า..."
-                className="mt-2 w-full rounded-2xl border border-pink-100 px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-pink-100"
+                className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-[#fffdfd] px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-[#fff1f5]"
               />
             </div>
 
@@ -589,7 +618,7 @@ export default function AdminProductsPage() {
                     event.target.value as CategoryFilter,
                   )
                 }
-                className="mt-2 w-full rounded-2xl border border-pink-100 bg-white px-4 py-3 outline-none"
+                className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-white px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-[#fff1f5]"
               >
                 <option value="all">ทุกประเภท</option>
                 <option value="Sticker">LINE Sticker</option>
@@ -613,7 +642,7 @@ export default function AdminProductsPage() {
                     event.target.value as StatusFilter,
                   )
                 }
-                className="mt-2 w-full rounded-2xl border border-pink-100 bg-white px-4 py-3 outline-none"
+                className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-white px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-[#fff1f5]"
               >
                 <option value="all">ทุกสถานะ</option>
                 <option value="active">กำลังแสดง</option>
@@ -637,7 +666,7 @@ export default function AdminProductsPage() {
                     event.target.value as PromotionFilter,
                   )
                 }
-                className="mt-2 w-full rounded-2xl border border-pink-100 bg-white px-4 py-3 outline-none"
+                className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-white px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-[#fff1f5]"
               >
                 <option value="all">ทุกโปรโมชั่น</option>
                 <option value="active">กำลังลดราคา</option>
@@ -662,7 +691,7 @@ export default function AdminProductsPage() {
                     event.target.value as SortOption,
                   )
                 }
-                className="mt-2 w-full rounded-2xl border border-pink-100 bg-white px-4 py-3 outline-none"
+                className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-white px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-[#fff1f5]"
               >
                 <option value="newest">ใหม่สุดก่อน</option>
                 <option value="oldest">เก่าสุดก่อน</option>
@@ -713,17 +742,17 @@ export default function AdminProductsPage() {
         )}
 
         {loading ? (
-          <div className="mt-8 rounded-3xl bg-white p-10 text-center text-sm text-gray-500 shadow-sm">
+          <div className="mt-6 rounded-[28px] border border-[#f7dce5] bg-white p-10 text-center text-sm text-gray-500 shadow-sm">
             กำลังโหลดสินค้า...
           </div>
         ) : products.length === 0 ? (
-          <div className="mt-8 rounded-3xl bg-white p-10 text-center shadow-sm">
+          <div className="mt-6 rounded-[28px] border border-[#f7dce5] bg-white p-10 text-center shadow-sm">
             <p className="text-gray-500">
               ยังไม่มีสินค้าในระบบ
             </p>
           </div>
         ) : sortedProducts.length === 0 ? (
-          <div className="mt-8 rounded-3xl bg-white p-10 text-center shadow-sm">
+          <div className="mt-6 rounded-[28px] border border-[#f7dce5] bg-white p-10 text-center shadow-sm">
             <p className="font-semibold text-[#4f4144]">
               ไม่พบสินค้าที่ตรงกับตัวกรอง
             </p>
@@ -741,23 +770,28 @@ export default function AdminProductsPage() {
             </button>
           </div>
         ) : (
-          <div className="mt-8 grid gap-4">
+          <div className="mt-6 grid gap-4">
             {sortedProducts.map((product) => {
+              const promotionStatus =
+                getPromotionStatus(product);
+
               const hasPromotion =
+                promotionStatus === "active" &&
                 product.sale_price !== null;
 
               return (
                 <article
                   key={product.id}
-                  className="flex flex-col gap-4 rounded-3xl border border-pink-100 bg-white p-4 shadow-sm sm:flex-row sm:items-start"
+                  className="rounded-[28px] border border-[#f7dce5] bg-white p-4 shadow-[0_8px_24px_rgba(148,93,112,0.06)] transition hover:shadow-[0_12px_30px_rgba(148,93,112,0.1)]"
                 >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="aspect-square w-full rounded-2xl bg-pink-50 object-cover sm:h-24 sm:w-24"
-                  />
+                  <div className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)_240px] lg:items-center">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="aspect-square w-full rounded-2xl bg-[#fff7fa] object-cover sm:h-28 sm:w-28 lg:h-24 lg:w-24"
+                    />
 
-                  <div className="min-w-0 flex-1">
+                    <div className="min-w-0">
                     <div className="flex flex-wrap gap-2">
                       <span className="rounded-full bg-pink-50 px-3 py-1 text-xs font-semibold text-[#d76588]">
                         {product.category === "Sticker"
@@ -782,6 +816,12 @@ export default function AdminProductsPage() {
                           ? "กำลังแสดง"
                           : "ซ่อนสินค้า"}
                       </span>
+
+                      {getPromotionStatus(product) === "expired" && (
+                        <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700">
+                          โปรหมดแล้ว
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="mt-3 truncate text-lg font-bold text-[#4f4144]">
@@ -815,17 +855,21 @@ export default function AdminProductsPage() {
                       )}
                     </div>
 
-                    {hasPromotion && (
+                    {product.promotion_end && (
                       <p className="mt-1 text-xs text-gray-500">
-                        หมดโปรโมชั่น{" "}
+                        {promotionStatus === "active"
+                          ? "หมดโปรโมชั่น"
+                          : promotionStatus === "expired"
+                            ? "โปรโมชั่นสิ้นสุด"
+                            : "วันที่โปรโมชั่น"}{" "}
                         {formatDate(
                           product.promotion_end,
                         )}
                       </p>
                     )}
-                  </div>
+                    </div>
 
-                  <div className="w-full sm:w-[240px]">
+                    <div className="w-full">
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
@@ -906,7 +950,7 @@ export default function AdminProductsPage() {
                           href={product.line_store_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="rounded-2xl bg-[#06c755] px-3 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#05b84e]"
+                          className="rounded-2xl border border-[#bde9cb] bg-[#f3fff7] px-3 py-2.5 text-center text-sm font-semibold text-[#179a49] transition hover:bg-[#e8fff0]"
                         >
                           LINE Store
                         </a>
@@ -929,10 +973,11 @@ export default function AdminProductsPage() {
                           `/admin/products/${product.id}/edit`,
                         )
                       }
-                      className="mt-2 w-full rounded-2xl border border-pink-200 px-4 py-3 text-sm font-semibold text-[#d65f84] transition hover:bg-pink-50"
+                      className="mt-2 w-full rounded-2xl border border-[#f2d5df] bg-white px-4 py-3 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
                     >
                       แก้ไขสินค้า
                     </button>
+                    </div>
                   </div>
                 </article>
               );
