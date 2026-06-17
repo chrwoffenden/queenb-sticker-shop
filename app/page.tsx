@@ -50,6 +50,11 @@ type ProductCardProps = {
 const CART_STORAGE_KEY = "queenb-cart";
 const SHOP_LINE_URL = "https://line.me/R/ti/p/@ecx0250y";
 
+const INSTAGRAM_URL = "https://www.instagram.com/queenb.sticker/";
+
+const PROMOTION_GROUP_URL =
+  "https://line.me/ti/g2/xe-yDco3LOiVICuEyUTE-1sQR6wrwHZGipDXOQ?utm_source=invitation&utm_medium=link_copy&utm_campaign=default";
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("th-TH").format(price);
 }
@@ -688,9 +693,35 @@ export default function HomePage() {
             <a href="#how-to-order" className="transition hover:text-[#df6f91]">
               วิธีสั่งซื้อ
             </a>
+
+            <Link
+              href="/promotions"
+              className="transition hover:text-[#df6f91]"
+            >
+              โปรโมชั่น
+            </Link>
+
+            <Link href="/faq" className="transition hover:text-[#df6f91]">
+              FAQ
+            </Link>
           </nav>
 
-          <button
+          <div className="flex items-center gap-2">
+            <Link
+              href="/promotions"
+              className="rounded-2xl border border-[#f0d8e0] bg-[#fff1f5] px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#ffe7ef] md:hidden"
+            >
+              โปร
+            </Link>
+
+            <Link
+              href="/faq"
+              className="rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5] md:hidden"
+            >
+              FAQ
+            </Link>
+
+            <button
             type="button"
             onClick={() => setIsCartOpen(true)}
             disabled={!cartLoaded || cart.length === 0}
@@ -706,7 +737,8 @@ export default function HomePage() {
                 {totalQuantity}
               </span>
             )}
-          </button>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -972,6 +1004,32 @@ export default function HomePage() {
               </p>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <div className="rounded-[32px] border border-[#f3dce4] bg-[#fff7fa] px-5 py-9 text-center shadow-[0_14px_38px_rgba(165,99,122,0.07)] sm:px-8 sm:py-11">
+          <p className="text-sm font-semibold text-[#df7796]">
+            Customer Reviews
+          </p>
+
+          <h2 className="mt-2 text-2xl font-bold text-[#4f4144] sm:text-3xl">
+            เสียงจากลูกค้า
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#806d72]">
+            ดูรีวิวจริงจากลูกค้าที่เคยใช้บริการ queenb.sticker
+            ได้โดยตรงบน LINE VOOM
+          </p>
+
+          <a
+            href="https://linevoom.line.me/post/1177509201798010112"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center justify-center rounded-full bg-[#df6f91] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#d35d82]"
+          >
+            ดูรีวิวจริงบน LINE VOOM
+          </a>
         </div>
       </section>
 
@@ -1479,41 +1537,50 @@ export default function HomePage() {
         </div>
       )}
       <footer className="mt-4 border-t border-[#f7dce5] bg-[#fff1f5] px-4 py-10">
-        <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-[1.2fr_0.8fr] md:items-end">
-          <div>
-            <h2 className="text-xl font-bold text-[#df6f91]">
-              queenb.sticker
-            </h2>
-            <p className="mt-2 text-sm text-[#806d72]">
-              Cute LINE stickers & themes ♡
-            </p>
-            <p className="mt-4 max-w-md text-sm leading-6 text-[#8d777e]">
-              ร้านสติกเกอร์และธีม LINE ลายน่ารัก
-              สั่งซื้อและสอบถามรายละเอียดผ่านแชท LINE ร้าน
-            </p>
-          </div>
+        <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
+          <img
+            src="/images/logo-icon.png"
+            alt="queenb.sticker logo"
+            className="h-16 w-16 rounded-2xl object-contain shadow-sm"
+          />
 
-          <div className="flex flex-wrap gap-3 md:justify-end">
+          <h2 className="mt-3 text-xl font-bold text-[#df6f91]">
+            queenb.sticker
+          </h2>
+
+          <p className="mt-1 text-sm text-[#806d72]">
+            Cute stickers & LINE themes
+          </p>
+
+          <p className="mt-4 max-w-lg text-sm leading-6 text-[#8d777e]">
+            ร้านสติกเกอร์และธีม LINE ลายน่ารัก
+            สั่งซื้อและสอบถามรายละเอียดผ่านแชท LINE ร้าน
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <a
-              href={SHOP_LINE_URL}
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-full border border-[#e7b7c8] bg-white px-5 py-2.5 text-sm font-semibold text-[#c75d84] transition hover:bg-[#fff8fb]"
+            >
+              Instagram ร้าน
+            </a>
+
+            <a
+              href={PROMOTION_GROUP_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-full bg-[#06c755] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#05b84e]"
             >
-              LINE ร้าน
-            </a>
-
-            <a
-              href="#how-to-order"
-              className="rounded-full border border-[#e9cbd5] bg-white px-5 py-2.5 text-sm font-semibold text-[#7d666e] transition hover:bg-[#fff8fa]"
-            >
-              วิธีสั่งซื้อ
+              เข้ากลุ่มแจ้งโปร
             </a>
           </div>
         </div>
 
-        <div className="mx-auto mt-8 max-w-6xl border-t border-[#efcfd9] pt-5 text-xs text-[#9b838b]">
-          © 2026 queenb.sticker
+        <div className="mx-auto mt-8 flex max-w-3xl flex-col items-center gap-2 border-t border-[#efcfd9] pt-5 text-center text-xs text-[#9b838b]">
+          <p>© 2026 queenb.sticker</p>
+          <p>Made with care for cute LINE lovers ♡</p>
         </div>
       </footer>
 
