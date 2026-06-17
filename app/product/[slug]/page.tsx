@@ -341,15 +341,23 @@ export default function ProductDetailPage() {
           <button
             type="button"
             onClick={() => router.push("/")}
-            className="text-left"
+            className="flex items-center gap-3 text-left"
           >
-            <h1 className="text-xl font-bold text-[#e27698]">
-              queenb.sticker
-            </h1>
+            <img
+              src="/images/logo-icon.png"
+              alt="queenb.sticker logo"
+              className="h-11 w-11 rounded-2xl object-contain shadow-sm"
+            />
 
-            <p className="text-xs text-gray-500">
-              Cute stickers & LINE themes ♡
-            </p>
+            <div>
+              <h1 className="text-lg font-bold text-[#e27698] md:text-xl">
+                queenb.sticker
+              </h1>
+
+              <p className="text-[11px] text-gray-500 md:text-xs">
+                Cute stickers & LINE themes
+              </p>
+            </div>
           </button>
 
           <button
@@ -410,13 +418,13 @@ export default function ProductDetailPage() {
           <div className="flex flex-col">
             <div className="flex flex-wrap gap-2">
               {promotionActive && (
-                <span className="rounded-full bg-[#fff0f5] px-3 py-1.5 text-xs font-bold text-[#d95f85]">
+                <span className="rounded-full bg-[#ef7898] px-3 py-1.5 text-xs font-bold text-white">
                   🎀 PROMO
                 </span>
               )}
 
               {product.isBestSeller && (
-                <span className="rounded-full bg-[#fff5d9] px-3 py-1.5 text-xs font-bold text-[#b98212]">
+                <span className="rounded-full bg-amber-400 px-3 py-1.5 text-xs font-bold text-white">
                   🔥 BEST SELLER
                 </span>
               )}
@@ -473,7 +481,7 @@ export default function ProductDetailPage() {
                   href={product.lineStoreUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-5 flex w-full items-center justify-center rounded-2xl border border-[#bde9cb] bg-[#f3fff7] px-4 py-3.5 font-semibold text-[#179a49] transition hover:bg-[#e8fff0]"
+                  className="mt-5 flex w-full items-center justify-center rounded-2xl bg-[#06c755] px-4 py-3.5 font-semibold text-white transition hover:bg-[#05b84e]"
                 >
                   เปิดสินค้าใน LINE Store
                 </a>
@@ -500,40 +508,25 @@ export default function ProductDetailPage() {
                   {addedMessage}
                 </div>
               )}
-
-              <div className="mt-5 rounded-2xl border border-[#f2dce4] bg-white p-4">
-                <p className="text-sm font-bold text-[#5c4a50]">
-                  สินค้าดิจิทัล ไม่มีการจัดส่ง
-                </p>
-
-                <p className="mt-2 text-xs leading-6 text-gray-500">
-                  หลังยืนยันการชำระเงิน ร้านจะดำเนินการส่งสินค้าให้ตาม LINE ID หรือ QR Code ที่ลูกค้าแจ้ง
-                </p>
-              </div>
             </div>
 
-            <div className="mt-5 rounded-3xl border border-[#f2dce4] bg-white p-5">
-              <h3 className="font-bold text-[#5c4a50]">
-                วิธีรับสินค้า
+            <div className="mt-5 rounded-3xl border border-pink-100 p-5">
+              <h3 className="font-bold">
+                วิธีสั่งซื้อ
               </h3>
 
               <ol className="mt-3 space-y-3 text-sm leading-6 text-gray-600">
-                <li>1. เลือกสินค้าและจำนวนตามจำนวนผู้รับ</li>
-                <li>2. แจ้ง LINE ID หรือส่ง QR Code ของผู้รับ</li>
-                <li>3. ร้านตรวจสอบรายการและดำเนินการส่งสินค้า</li>
+                <li>
+                  1. เลือกสินค้าที่ต้องการ
+                </li>
+                <li>
+                  2. เพิ่มจำนวนตามจำนวนผู้รับ
+                </li>
+                <li>
+                  3. กลับหน้าร้านเพื่อเปิดตะกร้า
+                  และส่งรายการให้ร้าน
+                </li>
               </ol>
-
-              <div className="mt-5 rounded-2xl bg-[#fff7fa] p-4">
-                <p className="text-sm font-bold text-[#5c4a50]">
-                  ข้อควรรู้ก่อนซื้อ
-                </p>
-
-                <ul className="mt-2 space-y-2 text-xs leading-5 text-gray-500">
-                  <li>• กรุณาตรวจสอบชื่อสินค้าและผู้รับให้ถูกต้อง</li>
-                  <li>• สินค้าดิจิทัลไม่สามารถจัดส่งเป็นพัสดุได้</li>
-                  <li>• สอบถามรายละเอียดเพิ่มเติมได้ทางแชท LINE ร้าน</li>
-                </ul>
-              </div>
 
               <button
                 type="button"

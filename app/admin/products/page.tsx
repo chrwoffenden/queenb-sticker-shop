@@ -431,9 +431,11 @@ export default function AdminProductsPage() {
       <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#fff1f5] text-xl shadow-sm">
-              ♡
-            </div>
+            <img
+              src="/images/logo-icon.png"
+              alt="queenb.sticker logo"
+              className="h-11 w-11 rounded-2xl object-contain shadow-sm"
+            />
 
             <div>
               <p className="text-sm font-bold text-[#df6f91]">
