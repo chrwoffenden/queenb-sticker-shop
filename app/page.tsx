@@ -106,11 +106,25 @@ function createOrderNumber() {
   return `QB-${year}${month}${day}-${random}`;
 }
 
-function countLineRecipients(value: string) {
+function getLineRecipients(value: string) {
   return value
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .filter(Boolean).length;
+    .filter(Boolean);
+}
+
+function extractLineId(line: string) {
+  const colonIndex = line.lastIndexOf(":");
+
+  return colonIndex >= 0
+    ? line.slice(colonIndex + 1).trim()
+    : line;
+}
+
+function isValidLineId(line: string) {
+  const lineId = extractLineId(line);
+
+  return lineId.length >= 3 && !/\s/.test(lineId);
 }
 
 function getProductUrl(
@@ -433,13 +447,23 @@ export default function HomePage() {
     }, 0);
   }, [cart]);
 
-  const recipientLineCount = useMemo(() => {
-    return countLineRecipients(recipientInfo);
+  const lineRecipients = useMemo(() => {
+    return getLineRecipients(recipientInfo);
   }, [recipientInfo]);
+
+  const recipientLineCount = lineRecipients.length;
+
+  const invalidLineRecipients = useMemo(() => {
+    return lineRecipients.filter((line) => !isValidLineId(line));
+  }, [lineRecipients]);
 
   const recipientCountMatches =
     contactType !== "line-id" ||
     recipientLineCount === totalQuantity;
+
+  const recipientInfoIsValid =
+    contactType !== "line-id" ||
+    (recipientCountMatches && invalidLineRecipients.length === 0);
 
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
@@ -627,7 +651,7 @@ export default function HomePage() {
   const handleCopyOrder = async () => {
     if (
       contactType === "line-id" &&
-      recipientLineCount !== totalQuantity
+      !recipientInfoIsValid
     ) {
       setCopyStatus("error");
       return;
@@ -1383,7 +1407,7 @@ export default function HomePage() {
 
                   <div
                     className={`mt-3 rounded-2xl px-4 py-3 text-sm ${
-                      recipientCountMatches
+                      recipientInfoIsValid
                         ? "bg-green-50 text-green-700"
                         : "bg-amber-50 text-amber-700"
                     }`}
@@ -1399,17 +1423,19 @@ export default function HomePage() {
                     </div>
 
                     <p className="mt-1 text-xs leading-5">
-                      {recipientCountMatches
-                        ? "จำนวน LINE ID ตรงกับจำนวนชุดสินค้าแล้ว ✓"
-                        : recipientLineCount < totalQuantity
-                          ? `ยังขาดอีก ${
-                              totalQuantity -
-                              recipientLineCount
-                            } คน`
-                          : `กรอกเกินมา ${
-                              recipientLineCount -
-                              totalQuantity
-                            } คน`}
+                      {recipientInfoIsValid
+                        ? "จำนวนและรูปแบบ LINE ID ถูกต้องแล้ว ✓"
+                        : invalidLineRecipients.length > 0
+                          ? "LINE ID ต้องมีอย่างน้อย 3 ตัวอักษร และห้ามมีช่องว่าง"
+                          : recipientLineCount < totalQuantity
+                            ? `ยังขาดอีก ${
+                                totalQuantity -
+                                recipientLineCount
+                              } คน`
+                            : `กรอกเกินมา ${
+                                recipientLineCount -
+                                totalQuantity
+                              } คน`}
                     </p>
                   </div>
                 </>
@@ -1443,20 +1469,23 @@ export default function HomePage() {
             {copyStatus === "error" && (
               <div className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-center text-sm text-red-600">
                 {contactType === "line-id" &&
-                recipientLineCount !== totalQuantity
-                  ? `จำนวน LINE ID ต้องเท่ากับ ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
-                  : copyStatus !== "copied"
-                    ? "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"
-                    : "ไม่สามารถดำเนินการได้"}
+                invalidLineRecipients.length > 0
+                  ? "กรุณากรอก LINE ID ให้ถูกต้อง อย่างน้อย 3 ตัวอักษร และไม่มีช่องว่าง"
+                  : contactType === "line-id" &&
+                      recipientLineCount !== totalQuantity
+                    ? `จำนวน LINE ID ต้องเท่ากับ ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
+                    : copyStatus !== "copied"
+                      ? "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"
+                      : "ไม่สามารถดำเนินการได้"}
               </div>
             )}
 
             <button
               type="button"
               onClick={handleCopyOrder}
-              disabled={!recipientCountMatches}
+              disabled={!recipientInfoIsValid}
               className={`mt-5 w-full rounded-2xl px-4 py-3.5 font-semibold text-white transition ${
-                recipientCountMatches
+                recipientInfoIsValid
                   ? "bg-[#df6f91] hover:bg-[#d35d82]"
                   : "cursor-not-allowed bg-gray-300"
               }`}
