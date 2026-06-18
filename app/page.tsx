@@ -658,20 +658,20 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#fff9f5] text-[#4f4144]">
       <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
-          <a href="#home" className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-4 md:px-4 md:py-3.5">
+          <a href="#home" className="flex min-w-0 items-center gap-2.5 md:gap-3">
             <img
               src="/images/logo-icon.png"
               alt="queenb.sticker logo"
-              className="h-11 w-11 rounded-2xl object-contain shadow-sm"
+              className="h-10 w-10 shrink-0 rounded-2xl object-contain shadow-sm md:h-11 md:w-11"
             />
 
-            <div>
-              <h1 className="text-lg font-bold text-[#df6f91] md:text-xl">
+            <div className="min-w-0">
+              <h1 className="truncate text-base font-bold text-[#df6f91] md:text-xl">
                 queenb.sticker
               </h1>
 
-              <p className="text-[11px] text-[#806d72] md:text-xs">
+              <p className="hidden text-[11px] text-[#806d72] sm:block md:text-xs">
                 Cute stickers & LINE themes
               </p>
             </div>
@@ -686,10 +686,7 @@ export default function HomePage() {
               สินค้าขายดี
             </a>
 
-            <Link
-              href="/products"
-              className="transition hover:text-[#df6f91]"
-            >
+            <Link href="/products" className="transition hover:text-[#df6f91]">
               สินค้าทั้งหมด
             </Link>
 
@@ -709,44 +706,54 @@ export default function HomePage() {
             </Link>
           </nav>
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/products"
-              className="rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5] md:hidden"
-            >
-              สินค้า
-            </Link>
+          <div className="flex shrink-0 items-center gap-2">
+            <details className="relative md:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-center rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2 text-sm font-semibold text-[#d65f84]">
+                เมนู
+              </summary>
 
-            <Link
-              href="/promotions"
-              className="rounded-2xl border border-[#f0d8e0] bg-[#fff1f5] px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#ffe7ef] md:hidden"
-            >
-              โปร
-            </Link>
+              <div className="absolute right-0 top-12 w-48 overflow-hidden rounded-2xl border border-[#f0d8e0] bg-white p-2 shadow-xl">
+                <Link
+                  href="/products"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
+                >
+                  สินค้าทั้งหมด
+                </Link>
 
-            <Link
-              href="/faq"
-              className="rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5] md:hidden"
-            >
-              FAQ
-            </Link>
+                <Link
+                  href="/promotions"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
+                >
+                  โปรโมชั่น
+                </Link>
+
+                <Link
+                  href="/faq"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
+                >
+                  FAQ
+                </Link>
+              </div>
+            </details>
 
             <button
-            type="button"
-            onClick={() => setIsCartOpen(true)}
-            disabled={!cartLoaded || cart.length === 0}
-            className={`relative rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${
-              cartLoaded && cart.length > 0
-                ? "bg-[#fff1f5] text-[#d65f84] hover:bg-[#ffe5ee]"
-                : "cursor-not-allowed bg-gray-100 text-gray-400"
-            }`}
-          >
-            🛒 ตะกร้า
-            {totalQuantity > 0 && (
-              <span className="ml-2 inline-flex min-w-6 items-center justify-center rounded-full bg-[#df6f91] px-1.5 py-0.5 text-xs text-white">
-                {totalQuantity}
-              </span>
-            )}
+              type="button"
+              onClick={() => setIsCartOpen(true)}
+              disabled={!cartLoaded || cart.length === 0}
+              className={`relative rounded-2xl px-3 py-2 text-sm font-semibold transition md:px-4 md:py-2.5 ${
+                cartLoaded && cart.length > 0
+                  ? "bg-[#fff1f5] text-[#d65f84] hover:bg-[#ffe5ee]"
+                  : "cursor-not-allowed bg-gray-100 text-gray-400"
+              }`}
+            >
+              <span className="md:hidden">🛒</span>
+              <span className="hidden md:inline">🛒 ตะกร้า</span>
+
+              {totalQuantity > 0 && (
+                <span className="ml-1 inline-flex min-w-5 items-center justify-center rounded-full bg-[#df6f91] px-1.5 py-0.5 text-[10px] text-white md:ml-2 md:min-w-6 md:text-xs">
+                  {totalQuantity}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -754,93 +761,54 @@ export default function HomePage() {
 
       <section
         id="home"
-        className="mx-auto max-w-6xl px-4 pb-8 pt-6 md:pb-16 md:pt-12"
+        className="mx-auto max-w-6xl px-3 pb-7 pt-5 sm:px-4 md:pb-14 md:pt-10"
       >
-        <div className="overflow-hidden rounded-[30px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff5e8] p-5 shadow-sm md:rounded-[34px] md:p-10">
-          <div className="grid items-center gap-6 md:grid-cols-[1.05fr_0.95fr] md:gap-8">
-            <div className="text-center md:text-left">
-              <span className="inline-flex rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#d4678b] shadow-sm">
+        <div className="relative overflow-hidden rounded-[26px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff5e8] px-5 py-10 text-center shadow-sm sm:px-8 sm:py-12 md:rounded-[34px] md:px-12 md:py-16">
+          <div className="absolute left-[8%] top-[18%] h-16 w-16 rounded-full bg-[#ffdce8]/70 blur-3xl sm:h-24 sm:w-24" />
+          <div className="absolute bottom-[12%] right-[8%] h-20 w-20 rounded-full bg-[#fff0be]/80 blur-3xl sm:h-28 sm:w-28" />
+
+          <div className="relative mx-auto max-w-3xl">
+            <div className="flex items-center justify-center gap-2 text-[#e597ad]">
+              <span className="text-lg">✦</span>
+              <span className="inline-flex rounded-full bg-white px-4 py-2 text-[11px] font-semibold text-[#d4678b] shadow-sm md:text-xs">
                 LINE Stickers & Themes ♡
               </span>
-
-              <h2 className="mt-4 text-[28px] font-bold leading-tight text-[#654d56] md:mt-5 md:text-5xl">
-                เติมความน่ารัก
-                <br />
-                ให้ทุกแชทของคุณ
-              </h2>
-
-              <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#806d72] md:mx-0 md:mt-5 md:text-base md:leading-7">
-                เลือกสติกเกอร์และธีม LINE ลายน่ารัก
-                เพิ่มจำนวนตามผู้รับ
-                แล้วส่งรายการสั่งซื้อผ่านแชท LINE ร้านได้ง่าย ๆ
-              </p>
-
-              <div className="mt-6 flex flex-col items-center gap-3 md:mt-7 md:flex-row md:justify-start">
-                <a
-                  href="#products"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-[#df6f91] px-7 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d35d82] sm:w-auto"
-                >
-                  เลือกซื้อสินค้า
-                </a>
-
-                <a
-                  href={SHOP_LINE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden items-center justify-center rounded-full border border-[#bde9cb] bg-white px-7 py-3 text-sm font-semibold text-[#19a84d] transition hover:bg-[#f2fff6] md:inline-flex"
-                >
-                  แอด LINE ร้าน
-                </a>
-
-                <a
-                  href={SHOP_LINE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-[#19a84d] underline-offset-4 hover:underline md:hidden"
-                >
-                  หรือแอด LINE ร้าน
-                </a>
-              </div>
+              <span className="text-lg">✦</span>
             </div>
 
-            <div className="relative mx-auto w-full max-w-md">
-              <div className="absolute -left-3 top-8 h-20 w-20 rounded-full bg-[#ffdce8] blur-2xl" />
-              <div className="absolute -right-3 bottom-8 h-24 w-24 rounded-full bg-[#fff0be] blur-2xl" />
+            <h2 className="mt-5 text-[29px] font-bold leading-[1.2] tracking-[-0.02em] text-[#654d56] sm:text-4xl md:text-5xl">
+              เติมความน่ารัก
+              <br />
+              ให้ทุกแชทของคุณ
+            </h2>
 
-              <div className="relative rounded-[26px] bg-white/70 p-3 shadow-sm backdrop-blur md:grid md:grid-cols-2 md:gap-3 md:rounded-[30px]">
-                {products.length > 0 ? (
-                  <>
-                    <a
-                      href={`/product/${products[0].slug}`}
-                      className="block overflow-hidden rounded-2xl bg-white shadow-sm md:col-span-2"
-                    >
-                      <img
-                        src={products[0].image}
-                        alt={products[0].name}
-                        className="aspect-[4/3] w-full object-cover md:aspect-[2/1]"
-                      />
-                    </a>
+            <p className="mx-auto mt-5 max-w-2xl text-[13px] leading-6 text-[#806d72] sm:text-sm md:text-base md:leading-7">
+              เลือกสติกเกอร์และธีม LINE ลายน่ารัก เพิ่มจำนวนตามผู้รับ
+              แล้วส่งรายการสั่งซื้อผ่านแชท LINE ร้านได้ง่าย ๆ
+            </p>
 
-                    {products.slice(1, 3).map((product) => (
-                      <a
-                        key={`hero-${product.id}`}
-                        href={`/product/${product.slug}`}
-                        className="hidden overflow-hidden rounded-2xl bg-white shadow-sm md:block"
-                      >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="aspect-square w-full object-cover"
-                        />
-                      </a>
-                    ))}
-                  </>
-                ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-[#fff7fa] text-sm text-[#b28f9a] md:col-span-2">
-                    Cute products are coming ♡
-                  </div>
-                )}
-              </div>
+            <div className="mx-auto mt-7 grid max-w-[360px] grid-cols-2 gap-2.5 sm:flex sm:max-w-none sm:items-center sm:justify-center sm:gap-3">
+              <Link
+                href="/products"
+                className="inline-flex items-center justify-center rounded-full bg-[#df6f91] px-4 py-3 text-[13px] font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d35d82] sm:px-7 sm:text-sm"
+              >
+                เลือกซื้อสินค้า
+              </Link>
+
+              <a
+                href={SHOP_LINE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-[#bde9cb] bg-white px-4 py-3 text-[13px] font-semibold text-[#19a84d] transition hover:bg-[#f2fff6] sm:px-7 sm:text-sm"
+              >
+                แอด LINE ร้าน
+              </a>
+            </div>
+
+            <div className="mt-7 flex items-center justify-center gap-4 text-[#edb8c8]">
+              <span>♡</span>
+              <span>✦</span>
+              <span>♡</span>
             </div>
           </div>
         </div>
@@ -892,9 +860,6 @@ export default function HomePage() {
                   ลายยอดนิยมที่ลูกค้าเลือกซื้อบ่อย
                 </p>
 
-                <p className="mt-2 text-xs text-amber-600 md:hidden">
-                  เลื่อนซ้าย–ขวาเพื่อดูสินค้าเพิ่มเติม
-                </p>
               </div>
 
               <span className="hidden text-sm text-gray-500 sm:block">
@@ -902,11 +867,11 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 md:grid md:grid-cols-[repeat(auto-fit,minmax(240px,320px))] md:justify-center md:gap-6 md:overflow-visible">
-              {bestSellerProducts.map((product) => (
+            <div className="grid gap-4 sm:grid-cols-2 md:mx-auto md:max-w-[680px] md:gap-6">
+              {bestSellerProducts.slice(0, 2).map((product) => (
                 <div
                   key={`best-${product.id}`}
-                  className="w-[78vw] max-w-[280px] shrink-0 snap-start md:w-full md:max-w-[320px]"
+                  className="mx-auto w-full max-w-[360px]"
                 >
                   <ProductCard
                     product={product}
@@ -917,6 +882,17 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+
+            {bestSellerProducts.length > 2 && (
+              <div className="mt-6 text-center">
+                <Link
+                  href="/products"
+                  className="inline-flex items-center justify-center rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
+                >
+                  ดู Best Seller ทั้งหมด
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       )}
