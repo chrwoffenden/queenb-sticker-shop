@@ -686,9 +686,12 @@ export default function HomePage() {
               สินค้าขายดี
             </a>
 
-            <a href="#products" className="transition hover:text-[#df6f91]">
+            <Link
+              href="/products"
+              className="transition hover:text-[#df6f91]"
+            >
               สินค้าทั้งหมด
-            </a>
+            </Link>
 
             <a href="#how-to-order" className="transition hover:text-[#df6f91]">
               วิธีสั่งซื้อ
@@ -707,6 +710,13 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Link
+              href="/products"
+              className="rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5] md:hidden"
+            >
+              สินค้า
+            </Link>
+
             <Link
               href="/promotions"
               className="rounded-2xl border border-[#f0d8e0] bg-[#fff1f5] px-3 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#ffe7ef] md:hidden"
@@ -913,55 +923,33 @@ export default function HomePage() {
 
       <section
         id="products"
-        className="mx-auto max-w-6xl px-4 pb-28"
+        className="mx-auto max-w-6xl px-4 pb-20"
       >
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-[#df7796]">
-              Our Products
+              Featured Products
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold md:text-3xl">
-              เลือกลายที่คุณชอบ
+            <h2 className="mt-1 text-2xl font-bold text-[#4f4144] md:text-3xl">
+              สินค้าแนะนำสำหรับคุณ
             </h2>
 
             <p className="mt-2 text-sm text-gray-500">
-              กดที่รูปหรือชื่อสินค้าเพื่อดูรายละเอียดเพิ่มเติม
+              คัดเลือกลายน่ารักที่ร้านอยากแนะนำในช่วงนี้
             </p>
           </div>
 
-          <span className="text-sm text-gray-500">
-            {filteredProducts.length} รายการ
-          </span>
-        </div>
-
-        <div className="mb-6 flex gap-2 overflow-x-auto pb-2">
-          {[
-            ["all", "ทั้งหมด"],
-            ["Sticker", "LINE Sticker"],
-            ["Theme", "LINE Theme"],
-          ].map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() =>
-                setCategoryFilter(
-                  value as CategoryFilter,
-                )
-              }
-              className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-semibold transition ${
-                categoryFilter === value
-                  ? "bg-[#df6f91] text-white shadow-sm"
-                  : "border border-[#f2d5df] bg-white text-[#7d666e] hover:bg-[#fff1f5]"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+          <Link
+            href="/products"
+            className="w-fit rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
+          >
+            ดูสินค้าทั้งหมด
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-          {filteredProducts.map((product) => (
+          {products.slice(0, 4).map((product) => (
             <ProductCard
               key={product.id}
               product={product}

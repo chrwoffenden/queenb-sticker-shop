@@ -199,4 +199,8 @@ export default function FAQPage() {
       </footer>
     </main>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> b480362f7b8279811f600ae53547e48bf8ead394

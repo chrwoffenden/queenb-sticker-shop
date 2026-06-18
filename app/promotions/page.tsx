@@ -160,15 +160,15 @@ export default function PromotionsPage() {
             />
           </div>
 
-          <p className="mt-5 text-sm font-bold uppercase tracking-[0.22em] text-[#d46b8d]">
+          <p className="mt-5 text-xs font-semibold uppercase tracking-[0.18em] text-[#d46b8d] sm:text-sm">
             Special Promotion
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-[#4f4144] sm:text-5xl">
+          <h1 className="mt-3 text-3xl font-extrabold leading-tight tracking-[-0.02em] text-[#4f4144] sm:text-4xl lg:text-[44px]">
             โปรโมชั่นน่ารัก ราคาพิเศษ
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-[#806d72] sm:text-base">
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[#806d72] sm:text-[15px]">
             รวมสติกเกอร์และธีม LINE ที่กำลังลดราคา
             โปรจะแสดงเฉพาะรายการที่ยังไม่หมดเขตเท่านั้น
           </p>
@@ -209,10 +209,10 @@ export default function PromotionsPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold text-[#d46b8d]">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#d46b8d] sm:text-sm">
                 Promotion Items
               </p>
-              <h2 className="mt-1 text-2xl font-bold text-[#4f4144]">
+              <h2 className="mt-2 text-2xl font-extrabold leading-tight tracking-[-0.01em] text-[#4f4144] sm:text-3xl">
                 สินค้าที่กำลังลดราคา
               </h2>
             </div>
@@ -288,7 +288,7 @@ export default function PromotionsPage() {
                     </Link>
 
                     <div className="p-5">
-                      <p className="text-xs font-semibold text-[#d46b8d]">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#d46b8d]">
                         {product.category === "Sticker"
                           ? "LINE Sticker"
                           : "LINE Theme"}
@@ -296,21 +296,21 @@ export default function PromotionsPage() {
 
                       <Link
                         href={`/product/${product.slug}`}
-                        className="mt-1 block text-lg font-bold leading-7 text-[#4f4144] transition hover:text-[#d65f84]"
+                        className="mt-2 block text-lg font-bold leading-6 text-[#4f4144] transition hover:text-[#d65f84]"
                       >
                         {product.name}
                       </Link>
 
                       <div className="mt-4 flex flex-wrap items-end gap-2">
-                        <span className="text-2xl font-bold text-[#df6f91]">
+                        <span className="text-2xl font-extrabold tracking-[-0.02em] text-[#df6f91]">
                           ฿{formatPrice(product.salePrice)}
                         </span>
-                        <span className="pb-1 text-sm text-gray-400 line-through">
+                        <span className="pb-1 text-sm font-medium text-gray-400 line-through">
                           ฿{formatPrice(product.regularPrice)}
                         </span>
                       </div>
 
-                      <p className="mt-2 text-xs text-[#8d777e]">
+                      <p className="mt-2 text-[11px] font-medium leading-5 text-[#8d777e]">
                         หมดโปรโมชั่น {formatDate(product.promotionEnd)}
                       </p>
 
