@@ -1471,14 +1471,15 @@ export default function HomePage() {
                     <p className="font-bold">คัดลอกรายการแล้ว</p>
 
                     <p className="mt-1 text-xs leading-5 text-green-700">
-                      ขั้นตอนถัดไป: เปิดแชท LINE ร้าน วางรายการสั่งซื้อ
-                      แนบ QR Code หากเลือกวิธี QR Code แล้วรอร้านตรวจสอบและยืนยันรายการค่ะ
+                      ขั้นตอนถัดไป กรุณาเปิดแชท LINE ร้าน
+                      แล้ววางรายการสั่งซื้อที่คัดลอกไว้
+                      หากเลือกวิธี QR Code ให้แนบรูป QR Code ไปในแชทด้วยค่ะ
                     </p>
 
                     <ol className="mt-3 space-y-1.5 text-xs leading-5 text-green-700">
                       <li>1. กดปุ่ม “เปิดแชท LINE ร้าน”</li>
                       <li>2. วางรายการสั่งซื้อที่คัดลอกไว้</li>
-                      <li>3. แนบ QR Code หากต้องส่งเป็นรูป QR</li>
+                      <li>3. แนบรูป QR Code หากเลือกวิธีส่ง QR Code</li>
                       <li>4. รอร้านตรวจสอบและยืนยันรายการ</li>
                     </ol>
                   </div>
