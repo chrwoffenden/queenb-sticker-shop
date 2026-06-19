@@ -1495,9 +1495,7 @@ export default function HomePage() {
                   : contactType === "line-id" &&
                       recipientLineCount !== totalQuantity
                     ? `จำนวน LINE ID ต้องเท่ากับ ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
-                    : copyStatus !== "copied"
-                      ? "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"
-                      : "ไม่สามารถดำเนินการได้"}
+                    : "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"}
               </div>
             )}
 
