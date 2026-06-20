@@ -457,13 +457,13 @@ export default function HomePage() {
     return lineRecipients.filter((line) => !isValidLineId(line));
   }, [lineRecipients]);
 
-  const recipientCountMatches =
+  const recipientCountIsValid =
     contactType !== "line-id" ||
-    recipientLineCount === totalQuantity;
+    (recipientLineCount >= 1 && recipientLineCount <= totalQuantity);
 
   const recipientInfoIsValid =
     contactType !== "line-id" ||
-    (recipientCountMatches && invalidLineRecipients.length === 0);
+    (recipientCountIsValid && invalidLineRecipients.length === 0);
 
   const addToCart = (product: Product) => {
     setCart((currentCart) => {
@@ -613,6 +613,10 @@ export default function HomePage() {
         ? [
             "👤 LINE ID ผู้รับ:",
             recipientInfo.trim() || "-",
+            "",
+            recipientLineCount === 1
+              ? "📌 หมายเหตุ: ส่งสินค้าทั้งหมดในออเดอร์นี้ให้ LINE ID เดียวกัน"
+              : "📌 หมายเหตุ: มีผู้รับหลายคน กรุณาระบุเพิ่มเติมในแชทว่าต้องการส่งสินค้าใดให้แต่ละไอดี",
           ].join("\n")
         : [
             "👤 ช่องทางผู้รับ: ส่ง QR Code LINE ในแชทร้าน",
@@ -1044,7 +1048,7 @@ export default function HomePage() {
               [
                 "2",
                 "กำหนดจำนวน",
-                "กดเพิ่มจำนวนตามจำนวน LINE ID ผู้รับ",
+                "กดเพิ่มจำนวนตามจำนวนสินค้าที่ต้องการ",
               ],
               [
                 "3",
@@ -1356,8 +1360,8 @@ export default function HomePage() {
               </p>
 
               <p className="mt-1 text-xs leading-5 text-gray-500">
-                กรณีซื้อหลายชุด สามารถแจ้ง LINE ID
-                หรือส่ง QR Code แยกตามจำนวนผู้รับได้
+                กรอก LINE ID อย่างน้อย 1 ไอดี หากส่งให้หลายคนให้แยก 1 ไอดีต่อ 1 บรรทัด
+                หากกรอกเพียง 1 ไอดี ระบบจะถือว่าส่งสินค้าทั้งหมดให้ไอดีนี้
               </p>
 
               <div className="mt-3 grid grid-cols-2 gap-3">
@@ -1400,7 +1404,12 @@ export default function HomePage() {
                       setRecipientInfo(event.target.value);
                       setCopyStatus("idle");
                     }}
-                    placeholder={`กรอก LINE ID แยกบรรทัด เช่น\nผู้รับ 1: line_one\nผู้รับ 2: line_two`}
+                    placeholder={`กรอก LINE ID เช่น
+line_one
+
+หรือถ้าส่งหลายคนให้แยกบรรทัด เช่น
+ผู้รับ 1: line_one
+ผู้รับ 2: line_two`}
                     rows={5}
                     className="mt-4 w-full resize-none rounded-2xl border border-pink-100 px-4 py-3 outline-none transition focus:border-[#e27898] focus:ring-2 focus:ring-pink-100"
                   />
@@ -1418,24 +1427,20 @@ export default function HomePage() {
                       </span>
 
                       <span className="font-semibold">
-                        ต้องการ {totalQuantity} คน
+                        สูงสุด {totalQuantity} คน
                       </span>
                     </div>
 
                     <p className="mt-1 text-xs leading-5">
                       {recipientInfoIsValid
-                        ? "จำนวนและรูปแบบ LINE ID ถูกต้องแล้ว ✓"
+                        ? recipientLineCount === 1
+                          ? "ถูกต้องแล้ว ✓ ส่งสินค้าทั้งหมดให้ LINE ID นี้"
+                          : "ถูกต้องแล้ว ✓ มีผู้รับหลายคน กรุณาระบุการแบ่งส่งในแชท"
                         : invalidLineRecipients.length > 0
                           ? "LINE ID ต้องมีอย่างน้อย 3 ตัวอักษร และห้ามมีช่องว่าง"
-                          : recipientLineCount < totalQuantity
-                            ? `ยังขาดอีก ${
-                                totalQuantity -
-                                recipientLineCount
-                              } คน`
-                            : `กรอกเกินมา ${
-                                recipientLineCount -
-                                totalQuantity
-                              } คน`}
+                          : recipientLineCount === 0
+                            ? "กรุณากรอก LINE ID อย่างน้อย 1 ไอดี"
+                            : `กรอกเกินจำนวนสินค้า ตอนนี้ซื้อ ${totalQuantity} ชุด แต่กรอก ${recipientLineCount} ไอดี`}
                     </p>
                   </div>
                 </>
@@ -1493,9 +1498,12 @@ export default function HomePage() {
                 invalidLineRecipients.length > 0
                   ? "กรุณากรอก LINE ID ให้ถูกต้อง อย่างน้อย 3 ตัวอักษร และไม่มีช่องว่าง"
                   : contactType === "line-id" &&
-                      recipientLineCount !== totalQuantity
-                    ? `จำนวน LINE ID ต้องเท่ากับ ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
-                    : "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"}
+                      recipientLineCount === 0
+                    ? "กรุณากรอก LINE ID อย่างน้อย 1 ไอดี"
+                    : contactType === "line-id" &&
+                        recipientLineCount > totalQuantity
+                      ? `จำนวน LINE ID ต้องไม่เกิน ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
+                      : "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"}
               </div>
             )}
 
