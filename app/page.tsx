@@ -769,7 +769,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[#fff9f5] text-[#4f4144]">
       <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-3 py-3 sm:px-4 md:px-4 md:py-3.5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-3 py-3 sm:px-4 md:px-4 md:py-3.5">
           <a href="#home" className="flex min-w-0 items-center gap-2.5 md:gap-3">
             <img
               src="/images/logo-icon.png"
@@ -788,42 +788,57 @@ export default function HomePage() {
             </div>
           </a>
 
-          <nav className="hidden items-center gap-6 text-sm font-medium text-[#6f5c62] md:flex">
-            <a href="#home" className="transition hover:text-[#df6f91]">
+          <nav className="hidden flex-1 items-center justify-center gap-2 text-sm font-semibold text-[#6f5c62] md:flex">
+            <a
+              href="#home"
+              className="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent px-4 transition hover:border-[#f0d8e0] hover:bg-[#fff8fb] hover:text-[#df6f91]"
+            >
               หน้าแรก
             </a>
 
-            <a href="#best-seller" className="transition hover:text-[#df6f91]">
-              สินค้าขายดี
-            </a>
-
-            <Link href="/products" className="transition hover:text-[#df6f91]">
+            <Link
+              href="/products"
+              className="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent px-4 transition hover:border-[#f0d8e0] hover:bg-[#fff8fb] hover:text-[#df6f91]"
+            >
               สินค้าทั้งหมด
             </Link>
 
-            <a href="#how-to-order" className="transition hover:text-[#df6f91]">
-              วิธีสั่งซื้อ
-            </a>
-
             <Link
               href="/promotions"
-              className="transition hover:text-[#df6f91]"
+              className="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent px-4 transition hover:border-[#f0d8e0] hover:bg-[#fff8fb] hover:text-[#df6f91]"
             >
               โปรโมชั่น
             </Link>
 
-            <Link href="/faq" className="transition hover:text-[#df6f91]">
+            <Link
+              href="/faq"
+              className="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent px-4 transition hover:border-[#f0d8e0] hover:bg-[#fff8fb] hover:text-[#df6f91]"
+            >
               FAQ
+            </Link>
+
+            <Link
+              href="/order-status"
+              className="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent px-4 transition hover:border-[#f0d8e0] hover:bg-[#fff8fb] hover:text-[#df6f91]"
+            >
+              เช็กออเดอร์
             </Link>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-2">
             <details className="relative md:hidden">
               <summary className="flex cursor-pointer list-none items-center justify-center rounded-2xl border border-[#f0d8e0] bg-white px-3 py-2 text-sm font-semibold text-[#d65f84]">
                 เมนู
               </summary>
 
               <div className="absolute right-0 top-12 w-48 overflow-hidden rounded-2xl border border-[#f0d8e0] bg-white p-2 shadow-xl">
+                <a
+                  href="#home"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
+                >
+                  หน้าแรก
+                </a>
+
                 <Link
                   href="/products"
                   className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
@@ -843,6 +858,13 @@ export default function HomePage() {
                   className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
                 >
                   FAQ
+                </Link>
+
+                <Link
+                  href="/order-status"
+                  className="block rounded-xl px-3 py-2.5 text-sm font-semibold text-[#6f5c62] hover:bg-[#fff1f5]"
+                >
+                  เช็กออเดอร์
                 </Link>
               </div>
             </details>
@@ -1814,7 +1836,18 @@ line_one
             >
               เข้ากลุ่มแจ้งโปร
             </a>
+
+            <Link
+              href="/order-status"
+              className="rounded-full border border-[#e7b7c8] bg-white px-5 py-2.5 text-sm font-semibold text-[#c75d84] transition hover:bg-[#fff8fb]"
+            >
+              ตรวจสอบออเดอร์ ♡
+            </Link>
           </div>
+
+          <p className="mt-4 text-xs leading-6 text-[#9b838b]">
+            กรอกเลขออเดอร์เพื่อตรวจสอบสถานะการสั่งซื้อของคุณ
+          </p>
         </div>
 
         <div className="mx-auto mt-8 flex max-w-3xl flex-col items-center gap-2 border-t border-[#efcfd9] pt-5 text-center text-xs text-[#9b838b]">
