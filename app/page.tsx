@@ -307,6 +307,14 @@ export default function HomePage() {
     (product) => product.isBestSeller === true,
   );
 
+  const promotionProducts = products.filter((product) =>
+    isPromotionActive(product),
+  );
+
+  const urgentPromotionProduct = promotionProducts[0];
+
+  const featuredProducts = products.slice(0, 6);
+
   const filteredProducts =
     categoryFilter === "all"
       ? products
@@ -789,56 +797,91 @@ export default function HomePage() {
 
       <section
         id="home"
-        className="mx-auto max-w-6xl px-3 pb-7 pt-5 sm:px-4 md:pb-14 md:pt-10"
+        className="mx-auto max-w-6xl px-3 pb-6 pt-5 sm:px-4 md:pb-10 md:pt-8"
       >
-        <div className="relative overflow-hidden rounded-[26px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff5e8] px-5 py-10 text-center shadow-sm sm:px-8 sm:py-12 md:rounded-[34px] md:px-12 md:py-16">
+        <div className="relative overflow-hidden rounded-[30px] border border-[#f7dce5] bg-gradient-to-br from-[#fff1f5] via-[#fff9f5] to-[#fff3df] px-5 py-8 shadow-sm sm:px-8 md:grid md:grid-cols-[1.15fr_0.85fr] md:items-center md:gap-8 md:rounded-[36px] md:px-12 md:py-12">
+          <div className="absolute left-10 top-10 text-lg text-[#f3a4b9]">♡</div>
+          <div className="absolute right-14 top-12 text-lg text-[#f4c156]">✦</div>
+          <div className="absolute bottom-12 left-[48%] hidden text-lg text-[#9fd8b5] md:block">✧</div>
           <div className="absolute left-[8%] top-[18%] h-16 w-16 rounded-full bg-[#ffdce8]/70 blur-3xl sm:h-24 sm:w-24" />
-          <div className="absolute bottom-[12%] right-[8%] h-20 w-20 rounded-full bg-[#fff0be]/80 blur-3xl sm:h-28 sm:w-28" />
+          <div className="absolute bottom-[10%] right-[8%] h-24 w-24 rounded-full bg-[#fff0be]/80 blur-3xl sm:h-32 sm:w-32" />
 
-          <div className="relative mx-auto max-w-3xl">
-            <div className="flex items-center justify-center gap-2 text-[#e597ad]">
-              <span className="text-lg">✦</span>
-              <span className="inline-flex rounded-full bg-white px-4 py-2 text-[11px] font-semibold text-[#d4678b] shadow-sm md:text-xs">
-                LINE Stickers & Themes ♡
-              </span>
-              <span className="text-lg">✦</span>
+          <div className="relative text-center md:text-left">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[11px] font-bold text-[#d4678b] shadow-sm md:text-xs">
+              <span>🐝</span>
+              <span>Cute LINE Stickers & Themes</span>
             </div>
 
-            <h2 className="mt-5 text-[29px] font-bold leading-[1.2] tracking-[-0.02em] text-[#654d56] sm:text-4xl md:text-5xl">
-              เติมความน่ารัก
-              <br />
-              ให้ทุกแชทของคุณ
+            <h2 className="mt-5 text-[34px] font-black leading-[1.05] tracking-[-0.04em] text-[#5f4850] sm:text-5xl md:text-6xl">
+              queenb.sticker
             </h2>
 
-            <p className="mx-auto mt-5 max-w-2xl text-[13px] leading-6 text-[#806d72] sm:text-sm md:text-base md:leading-7">
-              เลือกสติกเกอร์และธีม LINE ลายน่ารัก เพิ่มจำนวนตามผู้รับ
-              แล้วส่งรายการสั่งซื้อผ่านแชท LINE ร้านได้ง่าย ๆ
+            <p className="mt-3 text-base font-bold tracking-[0.08em] text-[#df6f91] sm:text-lg">
+              Cute LINE Stickers & Themes
             </p>
 
-            <div className="mx-auto mt-7 grid max-w-[360px] grid-cols-2 gap-2.5 sm:flex sm:max-w-none sm:items-center sm:justify-center sm:gap-3">
+            <p className="mx-auto mt-4 max-w-xl text-[13px] leading-6 text-[#806d72] sm:text-sm md:mx-0 md:text-base md:leading-7">
+              สติกเกอร์และธีมไลน์น่ารัก ๆ สำหรับทุกวันของคุณ เลือกสินค้า
+              เพิ่มลงตะกร้า แล้วส่งรายการสั่งซื้อผ่าน LINE ได้ง่าย ๆ ♡
+            </p>
+
+            <div className="mx-auto mt-7 grid max-w-[390px] grid-cols-2 gap-2.5 sm:flex sm:max-w-none sm:items-center sm:justify-center sm:gap-3 md:justify-start">
               <Link
                 href="/products"
-                className="inline-flex items-center justify-center rounded-full bg-[#df6f91] px-4 py-3 text-[13px] font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d35d82] sm:px-7 sm:text-sm"
+                className="inline-flex items-center justify-center rounded-full bg-[#df6f91] px-4 py-3 text-[13px] font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-[#d35d82] sm:px-7 sm:text-sm"
               >
-                เลือกซื้อสินค้า
+                🛒 ดูสินค้าทั้งหมด
               </Link>
 
-              <a
-                href={SHOP_LINE_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-full border border-[#bde9cb] bg-white px-4 py-3 text-[13px] font-semibold text-[#19a84d] transition hover:bg-[#f2fff6] sm:px-7 sm:text-sm"
+              <Link
+                href="/promotions"
+                className="inline-flex items-center justify-center rounded-full border border-[#efc9d6] bg-white px-4 py-3 text-[13px] font-bold text-[#d65f84] transition hover:bg-[#fff1f5] sm:px-7 sm:text-sm"
               >
-                แอด LINE ร้าน
-              </a>
-            </div>
-
-            <div className="mt-7 flex items-center justify-center gap-4 text-[#edb8c8]">
-              <span>♡</span>
-              <span>✦</span>
-              <span>♡</span>
+                🏷️ ดูโปรโมชัน
+              </Link>
             </div>
           </div>
+
+          <div className="relative mt-8 flex justify-center md:mt-0">
+            <div className="relative flex h-56 w-56 items-center justify-center rounded-[44px] bg-white/70 shadow-[0_20px_60px_rgba(163,90,113,0.12)] sm:h-64 sm:w-64 md:h-72 md:w-72">
+              <div className="absolute -left-4 top-10 rounded-3xl bg-[#fff9f5] px-4 py-3 text-sm font-bold text-[#df6f91] shadow-sm">
+                Sticker ♡
+              </div>
+              <div className="absolute -right-4 bottom-12 rounded-3xl bg-[#f2fff6] px-4 py-3 text-sm font-bold text-[#19a84d] shadow-sm">
+                LINE Gift
+              </div>
+              <img
+                src="/images/logo-icon.png"
+                alt="queenb.sticker mascot"
+                className="h-36 w-36 rounded-[34px] object-contain sm:h-44 sm:w-44"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-4 pb-10">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+          {[
+            ["🧸", "สติกเกอร์ไลน์", "Sticker", "/products"],
+            ["🎨", "ธีมไลน์", "Theme", "/products"],
+            ["🎁", "ของขวัญ", "Gift", "/products"],
+            ["🏷️", "โปรโมชัน", "Promotion", "/promotions"],
+          ].map(([icon, title, subtitle, href]) => (
+            <Link
+              key={title}
+              href={href}
+              className="group rounded-[24px] border border-[#f3dce4] bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(165,99,122,0.09)] md:p-5"
+            >
+              <div className="text-3xl">{icon}</div>
+              <h3 className="mt-3 text-sm font-bold text-[#5c4a50] md:text-base">
+                {title}
+              </h3>
+              <p className="mt-1 text-xs font-medium text-[#d47691]">
+                {subtitle}
+              </p>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -868,74 +911,211 @@ export default function HomePage() {
           </section>
         )}
 
-      {bestSellerProducts.length > 0 && (
+      {(bestSellerProducts.length > 0 || promotionProducts.length > 0) && (
         <section
           id="best-seller"
-          className="mx-auto max-w-6xl px-4 pb-14"
+          className="mx-auto max-w-6xl px-4 pb-12"
         >
-          <div className="rounded-[32px] border border-amber-100 bg-gradient-to-br from-[#fff8e8] via-[#fffafd] to-[#fff0f5] p-5 md:p-8">
-            <div className="mb-7 flex items-end justify-between">
-              <div>
-                <p className="text-sm font-semibold text-amber-600">
-                  Best Seller
-                </p>
+          <div className="grid gap-5 lg:grid-cols-[1.35fr_0.8fr]">
+            {bestSellerProducts.length > 0 && (
+              <div className="rounded-[32px] border border-amber-100 bg-gradient-to-br from-[#fff8e8] via-[#fffafd] to-[#fff0f5] p-5 md:p-7">
+                <div className="mb-6 flex items-end justify-between gap-4">
+                  <div>
+                    <p className="text-sm font-bold text-amber-600">
+                      👑 Best Seller
+                    </p>
 
-                <h2 className="mt-1 text-2xl font-bold md:text-3xl">
-                  สินค้าขายดีประจำร้าน 🔥
-                </h2>
+                    <h2 className="mt-1 text-2xl font-black text-[#4f4144] md:text-3xl">
+                      สินค้าขายดีประจำร้าน
+                    </h2>
 
-                <p className="mt-2 text-sm text-gray-500">
-                  ลายยอดนิยมที่ลูกค้าเลือกซื้อบ่อย
-                </p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      ลายยอดนิยมที่ลูกค้าเลือกซื้อบ่อย
+                    </p>
+                  </div>
 
-              </div>
-
-              <span className="hidden text-sm text-gray-500 sm:block">
-                {bestSellerProducts.length} รายการ
-              </span>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 md:mx-auto md:max-w-[680px] md:gap-6">
-              {bestSellerProducts.slice(0, 2).map((product) => (
-                <div
-                  key={`best-${product.id}`}
-                  className="mx-auto w-full max-w-[360px]"
-                >
-                  <ProductCard
-                    product={product}
-                    showBestSellerBadge
-                    productInCart={isInCart(product.id)}
-                    onAddToCart={addToCart}
-                  />
+                  {bestSellerProducts.length > 2 && (
+                    <Link
+                      href="/products"
+                      className="hidden rounded-full border border-[#e7cbd4] bg-white px-4 py-2 text-xs font-bold text-[#d65f84] transition hover:bg-[#fff1f5] sm:inline-flex"
+                    >
+                      ดูทั้งหมด
+                    </Link>
+                  )}
                 </div>
-              ))}
-            </div>
 
-            {bestSellerProducts.length > 2 && (
-              <div className="mt-6 text-center">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center justify-center rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
-                >
-                  ดู Best Seller ทั้งหมด
-                </Link>
+                <div className="grid gap-4 sm:grid-cols-2 md:gap-5">
+                  {bestSellerProducts.slice(0, 2).map((product) => (
+                    <ProductCard
+                      key={`best-${product.id}`}
+                      product={product}
+                      showBestSellerBadge
+                      productInCart={isInCart(product.id)}
+                      onAddToCart={addToCart}
+                    />
+                  ))}
+                </div>
+
+                {bestSellerProducts.length > 2 && (
+                  <div className="mt-5 text-center sm:hidden">
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center justify-center rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-bold text-[#d65f84] transition hover:bg-[#fff1f5]"
+                    >
+                      ดู Best Seller ทั้งหมด
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
+
+            <div className="relative overflow-hidden rounded-[32px] border border-[#f7dce5] bg-gradient-to-br from-[#fff7fb] via-white to-[#fff8e8] p-5 shadow-sm md:p-7">
+              <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-[#ffd7e3]/50 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-[#fff0b8]/60 blur-2xl" />
+
+              <div className="relative flex h-full flex-col">
+                <div>
+                  <p className="text-sm font-bold text-[#df6f91]">
+                    📢 News & Notice
+                  </p>
+
+                  <h2 className="mt-1 text-2xl font-black text-[#4f4144]">
+                    แจ้งข่าวสารจากร้าน
+                  </h2>
+
+                  <p className="mt-2 text-sm leading-6 text-[#8a7479]">
+                    อัปเดตโปร สินค้าใหม่ และข้อมูลสำคัญสำหรับการสั่งซื้อ
+                  </p>
+                </div>
+
+                <div className="mt-6 grid flex-1 gap-3">
+                  <div className="rounded-[22px] border border-[#ffe0ea] bg-white/90 p-4 shadow-sm">
+                    <div className="flex gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fff1f5] text-xl">
+                        🎀
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-black text-[#4f4144]">
+                          ราคาเริ่มต้นเพียง 15 บาท
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-[#806f73]">
+                          รวมสติกเกอร์และธีม LINE น่ารัก ๆ ราคาสบายกระเป๋า
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-[#e2f6e8] bg-white/90 p-4 shadow-sm">
+                    <div className="flex gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#f1fff5] text-xl">
+                        💬
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-black text-[#4f4144]">
+                          ส่งรายการผ่าน LINE
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-[#806f73]">
+                          เลือกสินค้า กรอก LINE ID หรือแจ้ง QR Code แล้วส่งให้ร้านได้เลย
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[22px] border border-[#fff0c9] bg-white/90 p-4 shadow-sm">
+                    <div className="flex gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fff9e8] text-xl">
+                        ✨
+                      </div>
+
+                      <div>
+                        <h3 className="text-base font-black text-[#4f4144]">
+                          โปรโมชันอัปเดตเรื่อย ๆ
+                        </h3>
+                        <p className="mt-1 text-sm leading-6 text-[#806f73]">
+                          แวะดูหน้าโปรโมชันเพื่อเช็กสินค้าราคาพิเศษล่าสุด
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative mt-6 grid gap-3 sm:grid-cols-2">
+                  <Link
+                    href="/promotions"
+                    className="rounded-2xl bg-[#df6f91] px-4 py-3 text-center text-sm font-bold text-white transition hover:bg-[#d35d82]"
+                  >
+                    ดูโปรโมชัน
+                  </Link>
+
+                  <Link
+                    href="/faq"
+                    className="rounded-2xl border border-[#efc9d6] bg-white px-4 py-3 text-center text-sm font-bold text-[#d65f84] transition hover:bg-[#fff1f5]"
+                  >
+                    วิธีสั่งซื้อ
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       )}
 
       <section
+        id="how-to-order"
+        className="mx-auto max-w-6xl px-4 pb-12"
+      >
+        <div className="rounded-[32px] border border-[#f3dce4] bg-white px-5 py-8 shadow-sm md:px-8 md:py-9">
+          <div className="text-center">
+            <p className="text-sm font-bold text-[#df7796]">
+              How to Order
+            </p>
+
+            <h2 className="mt-2 text-2xl font-black text-[#4f4144] md:text-3xl">
+              วิธีการสั่งซื้อ
+            </h2>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-4">
+            {[
+              ["1", "เลือกสินค้า", "เลือกสติกเกอร์หรือธีมไลน์ที่ต้องการ"],
+              ["2", "กรอก LINE ID", "กรอก LINE ID หรือเลือกส่ง QR Code"],
+              ["3", "คัดลอกรายการ", "ตรวจสอบรายการแล้วกดคัดลอกข้อความ"],
+              ["4", "ส่งให้ร้านทาง LINE", "ส่งรายการให้ร้านเพื่อยืนยันการสั่งซื้อ"],
+            ].map(([number, title, description]) => (
+              <div
+                key={number}
+                className="relative rounded-[24px] bg-[#fff8fa] p-5 text-center"
+              >
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#f5a2bb] font-black text-white shadow-sm">
+                  {number}
+                </div>
+
+                <h3 className="mt-4 font-black text-[#5c4a50]">
+                  {title}
+                </h3>
+
+                <p className="mt-2 text-xs leading-6 text-gray-500 md:text-sm">
+                  {description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section
         id="products"
-        className="mx-auto max-w-6xl px-4 pb-20"
+        className="mx-auto max-w-6xl px-4 pb-16"
       >
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold text-[#df7796]">
+            <p className="text-sm font-bold text-[#df7796]">
               Featured Products
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[#4f4144] md:text-3xl">
+            <h2 className="mt-1 text-2xl font-black text-[#4f4144] md:text-3xl">
               สินค้าแนะนำสำหรับคุณ
             </h2>
 
@@ -946,14 +1126,14 @@ export default function HomePage() {
 
           <Link
             href="/products"
-            className="w-fit rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
+            className="w-fit rounded-full border border-[#e7cbd4] bg-white px-5 py-2.5 text-sm font-bold text-[#d65f84] transition hover:bg-[#fff1f5]"
           >
             ดูสินค้าทั้งหมด
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-          {products.slice(0, 4).map((product) => (
+        <div className="grid grid-cols-2 items-stretch gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-6">
+          {featuredProducts.map((product) => (
             <ProductCard
               key={product.id}
               product={product}
@@ -1022,56 +1202,6 @@ export default function HomePage() {
           >
             ดูรีวิวจริงบน LINE VOOM
           </a>
-        </div>
-      </section>
-
-      <section
-        id="how-to-order"
-        className="border-t border-pink-100 bg-white px-4 py-14"
-      >
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold text-[#df7796]">
-            How to Order
-          </p>
-
-          <h2 className="mt-2 text-2xl font-bold">
-            สั่งซื้อง่ายเพียง 3 ขั้นตอน
-          </h2>
-
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {[
-              [
-                "1",
-                "เลือกสินค้า",
-                "เพิ่มลายที่ต้องการลงในตะกร้า",
-              ],
-              [
-                "2",
-                "กำหนดจำนวน",
-                "กดเพิ่มจำนวนตามจำนวนสินค้าที่ต้องการ",
-              ],
-              [
-                "3",
-                "ส่งให้ร้าน",
-                "คัดลอกรายการและเปิดแชท LINE ร้าน",
-              ],
-            ].map(([number, title, description]) => (
-              <div
-                key={number}
-                className="rounded-3xl bg-[#fff8fa] p-6"
-              >
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#f5a2bb] font-bold text-white">
-                  {number}
-                </div>
-
-                <h3 className="mt-4 font-bold">{title}</h3>
-
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  {description}
-                </p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

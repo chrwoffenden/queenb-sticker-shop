@@ -431,11 +431,13 @@ export default function AdminProductsPage() {
       <header className="sticky top-0 z-40 border-b border-[#f7dce5] bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <img
-              src="/images/logo-icon.png"
-              alt="queenb.sticker logo"
-              className="h-11 w-11 rounded-2xl object-contain shadow-sm"
-            />
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-[#fff1f5] shadow-sm">
+              <img
+                src="/images/logo-icon.png"
+                alt="queenb.sticker"
+                className="h-full w-full object-cover"
+              />
+            </div>
 
             <div>
               <p className="text-sm font-bold text-[#df6f91]">
@@ -448,7 +450,23 @@ export default function AdminProductsPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => router.push("/admin")}
+              className="rounded-2xl border border-[#f2d5df] bg-white px-4 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
+            >
+              หน้าหลักแอดมิน
+            </button>
+
+            <button
+              type="button"
+              onClick={() => router.push("/admin/notices")}
+              className="rounded-2xl border border-[#f2d5df] bg-white px-4 py-2.5 text-sm font-semibold text-[#d65f84] transition hover:bg-[#fff1f5]"
+            >
+              ข่าวสารหน้าแรก
+            </button>
+
             <button
               type="button"
               onClick={() => router.push("/")}
