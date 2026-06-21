@@ -10,6 +10,8 @@ type DashboardStats = {
   activeProducts: number;
   notices: number;
   activeNotices: number;
+  orders: number;
+  pendingOrders: number;
 };
 
 const initialStats: DashboardStats = {
@@ -17,6 +19,8 @@ const initialStats: DashboardStats = {
   activeProducts: 0,
   notices: 0,
   activeNotices: 0,
+  orders: 0,
+  pendingOrders: 0,
 };
 
 export default function AdminDashboardPage() {
@@ -35,6 +39,8 @@ export default function AdminDashboardPage() {
       activeProductsResult,
       noticesResult,
       activeNoticesResult,
+      ordersResult,
+      pendingOrdersResult,
     ] = await Promise.all([
       supabase
         .from("products")
@@ -50,19 +56,30 @@ export default function AdminDashboardPage() {
         .from("site_notices")
         .select("id", { count: "exact", head: true })
         .eq("is_active", true),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true }),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending_review"),
     ]);
 
     if (
       productsResult.error ||
       activeProductsResult.error ||
       noticesResult.error ||
-      activeNoticesResult.error
+      activeNoticesResult.error ||
+      ordersResult.error ||
+      pendingOrdersResult.error
     ) {
       console.error("โหลดข้อมูล Dashboard ไม่สำเร็จ", {
         productsError: productsResult.error,
         activeProductsError: activeProductsResult.error,
         noticesError: noticesResult.error,
         activeNoticesError: activeNoticesResult.error,
+        ordersError: ordersResult.error,
+        pendingOrdersError: pendingOrdersResult.error,
       });
 
       setMessage(
@@ -75,6 +92,8 @@ export default function AdminDashboardPage() {
       activeProducts: activeProductsResult.count ?? 0,
       notices: noticesResult.count ?? 0,
       activeNotices: activeNoticesResult.count ?? 0,
+      orders: ordersResult.count ?? 0,
+      pendingOrders: pendingOrdersResult.count ?? 0,
     });
 
     setLoading(false);
@@ -181,7 +200,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        <section className="mt-6 grid gap-4 md:grid-cols-4">
+        <section className="mt-6 grid gap-4 md:grid-cols-6">
           <div className="rounded-[24px] border border-[#f5d8df] bg-white p-5 shadow-sm">
             <p className="text-sm font-semibold text-[#8a7479]">
               สินค้าทั้งหมด
@@ -217,9 +236,27 @@ export default function AdminDashboardPage() {
               {loading ? "-" : stats.activeNotices}
             </p>
           </div>
+
+          <div className="rounded-[24px] border border-[#f5d8df] bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-[#8a7479]">
+              ออเดอร์ทั้งหมด
+            </p>
+            <p className="mt-2 text-3xl font-black text-[#4f4144]">
+              {loading ? "-" : stats.orders}
+            </p>
+          </div>
+
+          <div className="rounded-[24px] border border-[#f5d8df] bg-white p-5 shadow-sm">
+            <p className="text-sm font-semibold text-[#8a7479]">
+              รอตรวจสอบ
+            </p>
+            <p className="mt-2 text-3xl font-black text-[#df6f91]">
+              {loading ? "-" : stats.pendingOrders}
+            </p>
+          </div>
         </section>
 
-        <section className="mt-6 grid gap-5 md:grid-cols-3">
+        <section className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           <Link
             href="/admin/products"
             className="group rounded-[30px] border border-[#f5d8df] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
@@ -239,6 +276,28 @@ export default function AdminDashboardPage() {
 
             <div className="mt-5 inline-flex rounded-2xl bg-[#df6f91] px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-[#d35d82]">
               เข้าไปจัดการสินค้า
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/orders"
+            className="group rounded-[30px] border border-[#f5d8df] bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+          >
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#eef6ff] text-3xl">
+              🧾
+            </div>
+
+            <h3 className="mt-5 text-xl font-black text-[#4f4144]">
+              จัดการออเดอร์
+            </h3>
+
+            <p className="mt-2 text-sm leading-7 text-[#8a7479]">
+              ดูเลขออเดอร์ LINE ID ลูกค้า รายการสินค้า ยอดรวม
+              และเปลี่ยนสถานะการส่งของ
+            </p>
+
+            <div className="mt-5 inline-flex rounded-2xl bg-[#df6f91] px-4 py-2.5 text-sm font-bold text-white transition group-hover:bg-[#d35d82]">
+              เข้าไปจัดการออเดอร์
             </div>
           </Link>
 
@@ -292,7 +351,7 @@ export default function AdminDashboardPage() {
             ลำดับการทำงานที่แนะนำ
           </h3>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="mt-4 grid gap-3 md:grid-cols-4">
             <div className="rounded-[22px] bg-[#fff9f5] p-4">
               <p className="font-black text-[#df6f91]">1. ลงสินค้า</p>
               <p className="mt-1 text-sm leading-6 text-[#8a7479]">
@@ -308,7 +367,14 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="rounded-[22px] bg-[#fff9f5] p-4">
-              <p className="font-black text-[#df6f91]">3. เช็กหน้าร้าน</p>
+              <p className="font-black text-[#df6f91]">3. เช็กออเดอร์</p>
+              <p className="mt-1 text-sm leading-6 text-[#8a7479]">
+                ดูออเดอร์ใหม่และอัปเดตสถานะหลังส่งสินค้าให้ลูกค้า
+              </p>
+            </div>
+
+            <div className="rounded-[22px] bg-[#fff9f5] p-4">
+              <p className="font-black text-[#df6f91]">4. เช็กหน้าร้าน</p>
               <p className="mt-1 text-sm leading-6 text-[#8a7479]">
                 ทดสอบเพิ่มตะกร้า คัดลอกรายการ และเปิดแชท LINE ก่อนแชร์เว็บ
               </p>

@@ -37,7 +37,7 @@ type CartItem = Product & {
 };
 
 type ContactType = "line-id" | "qr-code";
-type CopyStatus = "idle" | "copied" | "error";
+type CopyStatus = "idle" | "saving" | "copied" | "error";
 type CategoryFilter = "all" | "Sticker" | "Theme";
 
 type ProductCardProps = {
@@ -297,6 +297,7 @@ export default function HomePage() {
   const [recipientInfo, setRecipientInfo] = useState("");
   const [note, setNote] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
+  const [orderRecordId, setOrderRecordId] = useState("");
   const [copyStatus, setCopyStatus] =
     useState<CopyStatus>("idle");
 
@@ -542,6 +543,7 @@ export default function HomePage() {
     setNote("");
     setCopyStatus("idle");
     setOrderNumber("");
+    setOrderRecordId("");
   };
 
   const clearCart = () => {
@@ -578,12 +580,13 @@ export default function HomePage() {
     if (cart.length === 0) return;
 
     setOrderNumber(createOrderNumber());
+    setOrderRecordId("");
     setCopyStatus("idle");
     setIsCartOpen(false);
     setIsCheckoutOpen(true);
   };
 
-  const buildOrderMessage = () => {
+  const buildOrderMessage = (currentOrderNumber = orderNumber) => {
     const productLines = cart
       .map((item, index) => {
         const unitPrice = getCurrentPrice(item);
@@ -642,7 +645,7 @@ export default function HomePage() {
       "🛒 รายการสั่งซื้อ",
       "━━━━━━━━━━━━━━",
       "",
-      `🧾 เลขที่รายการ: ${orderNumber}`,
+      `🧾 เลขออเดอร์: ${currentOrderNumber}`,
       "",
       productLines,
       "",
@@ -669,11 +672,83 @@ export default function HomePage() {
       return;
     }
 
+    if (cart.length === 0) {
+      setCopyStatus("error");
+      return;
+    }
+
+    const currentOrderNumber = orderNumber || createOrderNumber();
+
+    if (!orderNumber) {
+      setOrderNumber(currentOrderNumber);
+    }
+
+    const orderMessage = buildOrderMessage(currentOrderNumber);
+
     try {
-      await copyTextToClipboard(buildOrderMessage());
+      setCopyStatus("saving");
+
+      if (!orderRecordId) {
+        const customerLineIds =
+          contactType === "line-id"
+            ? lineRecipients.map((line) => extractLineId(line))
+            : [];
+
+        const { data: orderData, error: orderError } = await supabase
+          .from("orders")
+          .insert({
+            order_number: currentOrderNumber,
+            contact_type: contactType,
+            customer_line_ids: customerLineIds,
+            customer_note: note.trim() || null,
+            total_quantity: totalQuantity,
+            total_amount: totalPrice,
+            status: "pending_review",
+            order_message: orderMessage,
+          })
+          .select("id")
+          .single();
+
+        if (orderError || !orderData) {
+          console.error("สร้างออเดอร์ไม่สำเร็จ", orderError);
+          setCopyStatus("error");
+          return;
+        }
+
+        const orderItemsPayload = cart.map((item) => {
+          const priceEach = getCurrentPrice(item);
+
+          return {
+            order_id: orderData.id,
+            product_id: item.id,
+            product_name: item.name,
+            product_slug: item.slug,
+            product_category: item.category,
+            product_image: item.image,
+            line_store_url: item.lineStoreUrl ?? null,
+            quantity: item.quantity,
+            price_each: priceEach,
+            subtotal: priceEach * item.quantity,
+          };
+        });
+
+        const { error: orderItemsError } = await supabase
+          .from("order_items")
+          .insert(orderItemsPayload);
+
+        if (orderItemsError) {
+          console.error("สร้างรายการสินค้าในออเดอร์ไม่สำเร็จ", orderItemsError);
+          setCopyStatus("error");
+          return;
+        }
+
+        setOrderRecordId(orderData.id);
+      }
+
+      await copyTextToClipboard(orderMessage);
       setCopyStatus("copied");
     } catch (error) {
-      console.error("ไม่สามารถคัดลอกรายการได้", error);
+      console.error("ไม่สามารถสร้างหรือคัดลอกรายการได้", error);
       setCopyStatus("error");
     }
   };
@@ -1390,8 +1465,14 @@ export default function HomePage() {
                 </h2>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  เลขที่รายการ: {orderNumber}
+                  เลขออเดอร์: {orderNumber}
                 </p>
+
+                {orderRecordId && (
+                  <p className="mt-1 text-xs font-semibold text-green-600">
+                    บันทึกออเดอร์ในระบบแล้ว
+                  </p>
+                )}
               </div>
 
               <button
@@ -1499,6 +1580,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setContactType("line-id");
+                    setOrderRecordId("");
                     setCopyStatus("idle");
                   }}
                   className={`rounded-2xl border px-3 py-4 text-sm font-semibold transition ${
@@ -1514,6 +1596,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => {
                     setContactType("qr-code");
+                    setOrderRecordId("");
                     setCopyStatus("idle");
                   }}
                   className={`rounded-2xl border px-3 py-4 text-sm font-semibold transition ${
@@ -1532,6 +1615,7 @@ export default function HomePage() {
                     value={recipientInfo}
                     onChange={(event) => {
                       setRecipientInfo(event.target.value);
+                      setOrderRecordId("");
                       setCopyStatus("idle");
                     }}
                     placeholder={`กรอก LINE ID เช่น
@@ -1588,6 +1672,7 @@ line_one
               value={note}
               onChange={(event) => {
                 setNote(event.target.value);
+                setOrderRecordId("");
                 setCopyStatus("idle");
               }}
               placeholder="หมายเหตุถึงร้าน เช่น รายการที่ 1 ส่งให้ผู้รับคนที่ 1"
@@ -1603,10 +1688,10 @@ line_one
                   </div>
 
                   <div className="text-left">
-                    <p className="font-bold">คัดลอกรายการแล้ว</p>
+                    <p className="font-bold">สร้างออเดอร์และคัดลอกรายการแล้ว</p>
 
                     <p className="mt-1 text-xs leading-5 text-green-700">
-                      ขั้นตอนถัดไป กรุณาเปิดแชท LINE ร้าน
+                      ระบบบันทึกเลขออเดอร์ไว้แล้ว ขั้นตอนถัดไป กรุณาเปิดแชท LINE ร้าน
                       แล้ววางรายการสั่งซื้อที่คัดลอกไว้
                       หากเลือกวิธี QR Code ให้แนบรูป QR Code ไปในแชทด้วยค่ะ
                     </p>
@@ -1633,21 +1718,25 @@ line_one
                     : contactType === "line-id" &&
                         recipientLineCount > totalQuantity
                       ? `จำนวน LINE ID ต้องไม่เกิน ${totalQuantity} คน ตอนนี้กรอก ${recipientLineCount} คน`
-                      : "กรุณาคัดลอกรายการสั่งซื้อก่อนเปิดแชท LINE ร้าน"}
+                      : "ไม่สามารถสร้างออเดอร์หรือคัดลอกรายการได้ กรุณาลองใหม่อีกครั้ง"}
               </div>
             )}
 
             <button
               type="button"
               onClick={handleCopyOrder}
-              disabled={!recipientInfoIsValid}
+              disabled={!recipientInfoIsValid || copyStatus === "saving"}
               className={`mt-5 w-full rounded-2xl px-4 py-3.5 font-semibold text-white transition ${
-                recipientInfoIsValid
+                recipientInfoIsValid && copyStatus !== "saving"
                   ? "bg-[#df6f91] hover:bg-[#d35d82]"
                   : "cursor-not-allowed bg-gray-300"
               }`}
             >
-              📋 คัดลอกรายการสั่งซื้อ
+              {copyStatus === "saving"
+                ? "กำลังสร้างออเดอร์..."
+                : orderRecordId
+                  ? "📋 คัดลอกรายการอีกครั้ง"
+                  : "📋 สร้างออเดอร์และคัดลอกรายการ"}
             </button>
 
             <button
