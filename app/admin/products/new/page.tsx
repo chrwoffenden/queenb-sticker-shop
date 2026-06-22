@@ -16,8 +16,16 @@ type UploadResult = {
   filePath: string;
 };
 
+type LineStoreImportResult = {
+  title?: string;
+  category?: ProductCategory;
+  coverImage?: string;
+  previewImages?: string[];
+  error?: string;
+};
+
 const STORAGE_BUCKET = "product-images";
-const MAX_PREVIEW_IMAGES = 2;
+const MAX_PREVIEW_IMAGES = 40;
 
 function createSafeFileName(file: File) {
   const extension =
@@ -57,11 +65,20 @@ export default function NewProductPage() {
   const [submitting, setSubmitting] =
     useState(false);
 
+  const [importingLineStore, setImportingLineStore] =
+    useState(false);
+
   const [message, setMessage] = useState("");
 
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [lineStoreUrl, setLineStoreUrl] = useState("");
+
+  const [importedCoverImage, setImportedCoverImage] =
+    useState("");
+
+  const [importedPreviewImages, setImportedPreviewImages] =
+    useState<string[]>([]);
 
   const [slugEdited, setSlugEdited] =
     useState(false);
@@ -126,6 +143,12 @@ export default function NewProductPage() {
     );
   }, [previewFiles]);
 
+  const coverImageSource =
+    coverPreviewUrl || importedCoverImage;
+
+  const totalPreviewImageCount =
+    importedPreviewImages.length + previewFiles.length;
+
   useEffect(() => {
     return () => {
       if (coverPreviewUrl) {
@@ -182,6 +205,82 @@ export default function NewProductPage() {
         "ลบไฟล์ที่อัปโหลดไม่สำเร็จ",
         error,
       );
+    }
+  };
+
+  const handleImportLineStore = async () => {
+    const cleanUrl = lineStoreUrl.trim();
+
+    if (!cleanUrl) {
+      setMessage("กรุณาวางลิงก์ LINE Store ก่อนดึงข้อมูล");
+      return;
+    }
+
+    setImportingLineStore(true);
+    setMessage("");
+
+    try {
+      const response = await fetch(
+        `/api/line-store-preview?url=${encodeURIComponent(cleanUrl)}`,
+      );
+
+      const result =
+        (await response.json()) as LineStoreImportResult;
+
+      if (!response.ok) {
+        setMessage(
+          result.error ||
+            "ดึงข้อมูลจาก LINE Store ไม่สำเร็จ",
+        );
+        setImportingLineStore(false);
+        return;
+      }
+
+      if (result.title) {
+        setName(result.title);
+
+        if (!slugEdited) {
+          setSlug(createSlugFromName(result.title));
+        }
+      }
+
+      if (
+        result.category === "Sticker" ||
+        result.category === "Theme"
+      ) {
+        setCategory(result.category);
+      }
+
+      const importedImages = Array.from(
+        new Set(result.previewImages ?? []),
+      )
+        .filter((imageUrl) => imageUrl !== result.coverImage)
+        .slice(0, MAX_PREVIEW_IMAGES);
+
+      setImportedCoverImage(
+        result.coverImage ||
+          importedImages[0] ||
+          "",
+      );
+
+      setImportedPreviewImages(importedImages);
+      setCoverFile(null);
+      setPreviewFiles([]);
+
+      setMessage(
+        `ดึงข้อมูลสำเร็จ พบรูปทั้งหมด ${importedImages.length} รูป`,
+      );
+    } catch (error) {
+      console.error(
+        "ดึงข้อมูลจาก LINE Store ไม่สำเร็จ",
+        error,
+      );
+
+      setMessage(
+        "ดึงข้อมูลจาก LINE Store ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+      );
+    } finally {
+      setImportingLineStore(false);
     }
   };
 
@@ -253,18 +352,18 @@ export default function NewProductPage() {
       }
     }
 
-    if (!coverFile) {
-      return "กรุณาเลือกรูปปกสินค้า";
+    if (!coverFile && !importedCoverImage) {
+      return "กรุณาเลือกรูปปกสินค้า หรือดึงข้อมูลจาก LINE Store";
     }
 
-    if (previewFiles.length > MAX_PREVIEW_IMAGES) {
-      return `เลือกรูปพรีวิวได้สูงสุด ${MAX_PREVIEW_IMAGES} รูป`;
+    if (totalPreviewImageCount > MAX_PREVIEW_IMAGES) {
+      return `รูปพรีวิวรวมต้องไม่เกิน ${MAX_PREVIEW_IMAGES} รูป`;
     }
 
     const allFiles = [
       coverFile,
       ...previewFiles,
-    ];
+    ].filter((file): file is File => Boolean(file));
 
     const invalidFile = allFiles.find(
       (file) =>
@@ -325,14 +424,22 @@ export default function NewProductPage() {
         return;
       }
 
-      const coverUpload = await uploadImage(
-        coverFile!,
-        cleanSlug,
-      );
+      let coverImageForDatabase =
+        importedCoverImage;
 
-      uploadedPaths.push(
-        coverUpload.filePath,
-      );
+      if (coverFile) {
+        const coverUpload = await uploadImage(
+          coverFile,
+          cleanSlug,
+        );
+
+        uploadedPaths.push(
+          coverUpload.filePath,
+        );
+
+        coverImageForDatabase =
+          coverUpload.publicUrl;
+      }
 
       const previewUploads =
         await Promise.all(
@@ -345,12 +452,16 @@ export default function NewProductPage() {
         uploadedPaths.push(upload.filePath);
       });
 
-      const previewImageUrlsForDatabase = [
-        coverUpload.publicUrl,
-        ...previewUploads.map(
-          (upload) => upload.publicUrl,
-        ),
-      ];
+      const previewImageUrlsForDatabase = Array.from(
+        new Set([
+          ...importedPreviewImages,
+          ...previewUploads.map(
+            (upload) => upload.publicUrl,
+          ),
+        ].filter(Boolean)),
+      )
+        .filter((imageUrl) => imageUrl !== coverImageForDatabase)
+        .slice(0, MAX_PREVIEW_IMAGES);
 
       const { error: insertError } =
         await supabase
@@ -358,7 +469,7 @@ export default function NewProductPage() {
           .insert({
             name: name.trim(),
             category,
-            image: coverUpload.publicUrl,
+            image: coverImageForDatabase!,
             preview_images:
               previewImageUrlsForDatabase,
             regular_price:
@@ -519,16 +630,30 @@ export default function NewProductPage() {
                         event.target.value,
                       );
 
+                      setImportedCoverImage("");
+                      setImportedPreviewImages([]);
                       setMessage("");
                     }}
                     placeholder="วางลิงก์จาก LINE Store หรือแอป LINE"
                     className="mt-2 w-full rounded-2xl border border-pink-100 px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-pink-100"
                   />
 
-                  <p className="mt-2 text-xs text-gray-500">
-                    รองรับลิงก์ที่คัดลอกจาก LINE Store บนเว็บ
-                    และลิงก์ที่แชร์จากแอป LINE บนมือถือ
-                  </p>
+                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={handleImportLineStore}
+                      disabled={importingLineStore || !lineStoreUrl.trim()}
+                      className="rounded-2xl bg-[#df6f91] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#d35d82] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {importingLineStore
+                        ? "กำลังดึงข้อมูล..."
+                        : "ดึงข้อมูลจาก LINE Store"}
+                    </button>
+
+                    <p className="text-xs leading-6 text-gray-500">
+                      ระบบจะพยายามดึงชื่อสินค้า รูปปก และรูปตัวอย่างจากลิงก์
+                    </p>
+                  </div>
                 </div>
 
                 <div>
@@ -667,36 +792,42 @@ export default function NewProductPage() {
                         null,
                     );
 
+                    setImportedCoverImage("");
                     setMessage("");
                   }}
                   className="mt-2 block w-full rounded-2xl border border-dashed border-pink-200 bg-[#fff9fb] p-4 text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-[#ffe1eb] file:px-4 file:py-2 file:font-semibold file:text-[#d65f84]"
                 />
 
-                {coverFile && (
+                {coverImageSource && (
                   <div className="mt-4 flex items-center gap-3 rounded-2xl bg-[#fff8fa] p-3">
                     <img
-                      src={coverPreviewUrl}
+                      src={coverImageSource}
                       alt="ตัวอย่างรูปปก"
                       className="h-20 w-20 rounded-xl object-cover"
                     />
 
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">
-                        {coverFile.name}
+                        {coverFile
+                          ? coverFile.name
+                          : "รูปปกจาก LINE Store"}
                       </p>
 
                       <p className="mt-1 text-xs text-gray-500">
-                        {formatFileSize(
-                          coverFile.size,
-                        )}
+                        {coverFile
+                          ? formatFileSize(
+                              coverFile.size,
+                            )
+                          : "ระบบจะใช้ลิงก์รูปนี้เป็นรูปปกสินค้า"}
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      onClick={() =>
-                        setCoverFile(null)
-                      }
+                      onClick={() => {
+                        setCoverFile(null);
+                        setImportedCoverImage("");
+                      }}
                       className="rounded-full bg-red-50 px-3 py-1.5 text-xs text-red-500"
                     >
                       ลบ
@@ -747,23 +878,70 @@ export default function NewProductPage() {
                 />
 
                 <p className="mt-2 text-xs text-gray-500">
-                  เลือกได้สูงสุด 2 รูป ไม่รวมรูปปกสินค้า ระบบจะเปลี่ยนชื่อไฟล์ภาษาไทยเป็นชื่อปลอดภัยอัตโนมัติ
+                  เลือกได้สูงสุด 40 รูป ไม่รวมรูปปกสินค้า เหมาะสำหรับรูปตัวอย่างที่ดึงจาก LINE Store และระบบจะเปลี่ยนชื่อไฟล์ภาษาไทยเป็นชื่อปลอดภัยอัตโนมัติ
                 </p>
 
                 <p
                   className={`mt-2 text-xs font-semibold ${
-                    previewFiles.length ===
+                    totalPreviewImageCount ===
                     MAX_PREVIEW_IMAGES
                       ? "text-green-600"
                       : "text-[#d47691]"
                   }`}
                 >
-                  เลือกแล้ว {previewFiles.length} /{" "}
+                  รูปพรีวิวทั้งหมด {totalPreviewImageCount} /{" "}
                   {MAX_PREVIEW_IMAGES} รูป
                 </p>
 
+                {importedPreviewImages.length > 0 && (
+                  <div className="mt-4">
+                    <p className="mb-3 text-sm font-bold text-[#5c4a50]">
+                      รูปที่ดึงจาก LINE Store
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+                      {importedPreviewImages.map(
+                        (imageUrl, index) => (
+                          <div
+                            key={`${imageUrl}-${index}`}
+                            className="rounded-2xl bg-[#fff8fa] p-3"
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`รูปจาก LINE Store ${
+                                index + 1
+                              }`}
+                              className="aspect-square w-full rounded-xl object-cover"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setImportedPreviewImages(
+                                  (currentImages) =>
+                                    currentImages.filter(
+                                      (
+                                        _,
+                                        imageIndex,
+                                      ) =>
+                                        imageIndex !==
+                                        index,
+                                    ),
+                                )
+                              }
+                              className="mt-2 w-full rounded-xl bg-red-50 px-3 py-2 text-xs text-red-500"
+                            >
+                              ลบรูป
+                            </button>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {previewFiles.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
                     {previewFiles.map(
                       (file, index) => (
                         <div

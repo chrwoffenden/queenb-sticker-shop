@@ -90,6 +90,9 @@ export default function ProductDetailPage() {
   const [selectedPreviewImage, setSelectedPreviewImage] =
     useState("");
 
+  const [showAllPreviewImages, setShowAllPreviewImages] =
+    useState(false);
+
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -149,11 +152,12 @@ export default function ProductDetailPage() {
         name: productData.name,
         category: productData.category,
         image: productData.image,
-        previewImages:
-          productData.preview_images &&
-          productData.preview_images.length > 0
-            ? productData.preview_images
-            : [productData.image],
+        previewImages: Array.from(
+          new Set([
+            productData.image,
+            ...(productData.preview_images ?? []),
+          ]),
+        ),
         regularPrice: Number(
           productData.regular_price,
         ),
@@ -171,10 +175,8 @@ export default function ProductDetailPage() {
       };
 
       setProduct(formattedProduct);
-      setSelectedPreviewImage(
-        formattedProduct.previewImages[0] ||
-          formattedProduct.image,
-      );
+      setSelectedPreviewImage(formattedProduct.image);
+      setShowAllPreviewImages(false);
       setLoading(false);
     };
 
@@ -334,6 +336,13 @@ export default function ProductDetailPage() {
 
   const currentPrice = getCurrentPrice(product);
 
+  const visiblePreviewImages = showAllPreviewImages
+    ? product.previewImages
+    : product.previewImages.slice(0, 12);
+
+  const hiddenPreviewCount =
+    product.previewImages.length - visiblePreviewImages.length;
+
   return (
     <main className="min-h-screen bg-[#fff9f5] text-[#4f4144]">
       <header className="sticky top-0 z-40 border-b border-pink-100 bg-white/95 backdrop-blur">
@@ -384,34 +393,67 @@ export default function ProductDetailPage() {
               />
             </div>
 
-            <div className="mt-4 flex max-w-full gap-3 overflow-x-auto pb-2">
-              {product.previewImages.map(
-                (previewImage, index) => (
-                  <button
-                    key={`${previewImage}-${index}`}
-                    type="button"
-                    onClick={() =>
-                      setSelectedPreviewImage(
-                        previewImage,
-                      )
-                    }
-                    className={`h-20 w-20 shrink-0 overflow-hidden rounded-2xl border-2 bg-white transition sm:h-24 sm:w-24 ${
-                      selectedPreviewImage ===
-                      previewImage
-                        ? "border-[#df6f91]"
-                        : "border-transparent"
-                    }`}
-                  >
-                    <img
-                      src={previewImage}
-                      alt={`${product.name} ตัวอย่าง ${
-                        index + 1
+            <div className="mt-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-black text-[#4f4144]">
+                  ตัวอย่างสินค้า
+                </p>
+
+                <p className="text-xs font-semibold text-[#8a7479]">
+                  {product.previewImages.length} รูป
+                </p>
+              </div>
+
+              <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-6">
+                {visiblePreviewImages.map(
+                  (previewImage, index) => (
+                    <button
+                      key={`${previewImage}-${index}`}
+                      type="button"
+                      onClick={() =>
+                        setSelectedPreviewImage(
+                          previewImage,
+                        )
+                      }
+                      className={`aspect-square overflow-hidden rounded-2xl border-2 bg-white transition ${
+                        selectedPreviewImage ===
+                        previewImage
+                          ? "border-[#df6f91]"
+                          : "border-transparent"
                       }`}
-                      className="h-full w-full object-cover"
-                    />
-                  </button>
-                ),
+                    >
+                      <img
+                        src={previewImage}
+                        alt={`${product.name} ตัวอย่าง ${
+                          index + 1
+                        }`}
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  ),
+                )}
+              </div>
+
+              {hiddenPreviewCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllPreviewImages(true)}
+                  className="mt-3 w-full rounded-2xl border border-[#efc9d6] bg-white px-4 py-3 text-sm font-bold text-[#d65f84] transition hover:bg-[#fff1f5]"
+                >
+                  ดูตัวอย่างทั้งหมดอีก {hiddenPreviewCount} รูป
+                </button>
               )}
+
+              {showAllPreviewImages &&
+                product.previewImages.length > 12 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllPreviewImages(false)}
+                    className="mt-3 w-full rounded-2xl border border-[#efc9d6] bg-[#fff8fb] px-4 py-3 text-sm font-bold text-[#d65f84] transition hover:bg-[#fff1f5]"
+                  >
+                    ย่อรูปตัวอย่าง
+                  </button>
+                )}
             </div>
           </div>
 

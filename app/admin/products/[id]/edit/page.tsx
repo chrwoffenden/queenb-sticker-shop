@@ -32,7 +32,7 @@ type UploadResult = {
 };
 
 const STORAGE_BUCKET = "product-images";
-const MAX_PREVIEW_IMAGES = 2;
+const MAX_PREVIEW_IMAGES = 40;
 
 function createSafeFileName(file: File) {
   const extension =
@@ -941,7 +941,7 @@ export default function EditProductPage() {
                 />
 
                 {newPreviewFiles.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
                     {newPreviewFiles.map(
                       (file, index) => (
                         <div
