@@ -268,7 +268,9 @@ export default function NewProductPage() {
       setPreviewFiles([]);
 
       setMessage(
-        `ดึงข้อมูลสำเร็จ พบรูปทั้งหมด ${importedImages.length} รูป`,
+        result.category === "Theme"
+          ? "ดึงข้อมูลธีมสำเร็จ ระบบดึงรูปหลักให้แล้ว กรุณาเพิ่มพรีวิวเอง 4 รูป"
+          : `ดึงข้อมูลสำเร็จ พบรูปตัวอย่าง ${importedImages.length} รูป`,
       );
     } catch (error) {
       console.error(
@@ -638,20 +640,20 @@ export default function NewProductPage() {
                     className="mt-2 w-full rounded-2xl border border-pink-100 px-4 py-3 outline-none transition focus:border-[#df7796] focus:ring-2 focus:ring-pink-100"
                   />
 
-                  <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <div className="mt-3 grid gap-3 sm:grid-cols-[190px_1fr] sm:items-center">
                     <button
                       type="button"
                       onClick={handleImportLineStore}
                       disabled={importingLineStore || !lineStoreUrl.trim()}
-                      className="rounded-2xl bg-[#df6f91] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#d35d82] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="h-12 rounded-2xl bg-[#df6f91] px-5 text-sm font-bold leading-5 text-white transition hover:bg-[#d35d82] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {importingLineStore
                         ? "กำลังดึงข้อมูล..."
                         : "ดึงข้อมูลจาก LINE Store"}
                     </button>
 
-                    <p className="text-xs leading-6 text-gray-500">
-                      ระบบจะพยายามดึงชื่อสินค้า รูปปก และรูปตัวอย่างจากลิงก์
+                    <p className="rounded-2xl bg-[#fff8fb] px-4 py-3 text-xs leading-6 text-gray-500">
+                      สติกเกอร์ดึงรูปตัวอย่างอัตโนมัติ ส่วนธีมดึงรูปหลักอัตโนมัติ และเพิ่มพรีวิวเอง 4 รูป
                     </p>
                   </div>
                 </div>

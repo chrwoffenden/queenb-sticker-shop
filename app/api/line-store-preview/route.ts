@@ -49,10 +49,10 @@ function pickMetaContent(html: string, patterns: RegExp[]) {
 function getProductId(url: string) {
   const patterns = [
     /\/S\/sticker\/(\d+)/i,
-    /\/S\/theme\/(\d+)/i,
+    /\/S\/theme\/([a-z0-9-]+)/i,
     /\/stickershop\/product\/(\d+)/i,
     /\/themeshop\/product\/([a-z0-9-]+)/i,
-    /\/product\/(\d+)/i,
+    /\/product\/([a-z0-9-]+)/i,
   ];
 
   for (const pattern of patterns) {
@@ -133,36 +133,6 @@ function getMetaImages(html: string, pageUrl: string) {
   );
 }
 
-function getAllImageCandidates(html: string, pageUrl: string) {
-  const imageCandidates: string[] = [];
-
-  const imageAttributePatterns = [
-    /<img[^>]+src=["']([^"']+)["'][^>]*>/gi,
-    /<img[^>]+data-src=["']([^"']+)["'][^>]*>/gi,
-    /<img[^>]+data-original=["']([^"']+)["'][^>]*>/gi,
-    /["'](https?:\/\/[^"']+\.(?:png|jpg|jpeg|webp)(?:\?[^"']*)?)["']/gi,
-    /(?:https?:)?\/\/[^"'\\\s]+(?:stickershop|themeshop|line-scdn)[^"'\\\s]+/gi,
-  ];
-
-  imageAttributePatterns.forEach((pattern) => {
-    for (const match of html.matchAll(pattern)) {
-      const matchedUrl = match[1] || match[0];
-
-      if (matchedUrl) {
-        imageCandidates.push(matchedUrl);
-      }
-    }
-  });
-
-  return uniqueValues(
-    imageCandidates
-      .map((imageUrl) =>
-        cleanText(imageUrl).replace(/^\/\//, "https://"),
-      )
-      .map((imageUrl) => resolveImageUrl(imageUrl, pageUrl)),
-  );
-}
-
 function isUsableProductImage(imageUrl: string) {
   const lowerImageUrl = imageUrl.toLowerCase();
 
@@ -173,14 +143,14 @@ function isUsableProductImage(imageUrl: string) {
     lowerImageUrl.includes(".webp") ||
     lowerImageUrl.includes("stickershop") ||
     lowerImageUrl.includes("themeshop") ||
-    lowerImageUrl.includes("line-scdn.net");
+    lowerImageUrl.includes("line-scdn.net") ||
+    lowerImageUrl.includes("shop.line-scdn.net");
 
   const isTooSmallIcon =
     lowerImageUrl.includes("favicon") ||
     lowerImageUrl.includes("apple-touch-icon") ||
-    lowerImageUrl.includes("/icon") ||
-    lowerImageUrl.includes("profile") ||
-    lowerImageUrl.includes("avatar");
+    lowerImageUrl.includes("/profile") ||
+    lowerImageUrl.includes("/avatar");
 
   return looksLikeImage && !isTooSmallIcon;
 }
@@ -219,10 +189,68 @@ function getStickerCoverImage(productId: string) {
     : "";
 }
 
-function getSafeImages(html: string, pageUrl: string) {
+function getThemeCoverCandidates(productId: string) {
+  if (!productId) return [];
+
+  const basePath = `https://shop.line-scdn.net/themeshop/v1/products/${productId}/WEBSTORE/`;
+
+  return [
+    `${basePath}icon_198x278.png`,
+    `${basePath}icon_112x156.png`,
+    `${basePath}icon.png`,
+    `${basePath}main.png`,
+    `${basePath}main_198x278.png`,
+    `${basePath}main_112x156.png`,
+  ];
+}
+
+async function imageExists(imageUrl: string) {
+  try {
+    const response = await fetch(imageUrl, {
+      method: "HEAD",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const contentType = response.headers.get("content-type") ?? "";
+    return contentType.startsWith("image/");
+  } catch {
+    return false;
+  }
+}
+
+async function getFirstExistingImage(imageUrls: string[]) {
+  for (const imageUrl of imageUrls) {
+    if (await imageExists(imageUrl)) {
+      return imageUrl;
+    }
+  }
+
+  return "";
+}
+
+async function getSafeImages(html: string, pageUrl: string) {
   const category = getCategoryFromUrl(pageUrl);
   const productId = getProductId(pageUrl);
   const metaImages = getMetaImages(html, pageUrl).filter(isUsableProductImage);
+
+  if (category === "Theme") {
+    /*
+      แนวทางเสถียร:
+      ธีม LINE ให้ดึงเฉพาะรูปหลักอัตโนมัติ
+      ส่วนรูปพรีวิวธีม 4 รูปให้แอดมินอัปโหลดเอง เพราะ LINE ไม่ส่ง preview
+      แบบเดียวกับสติกเกอร์ใน HTML เสมอ
+    */
+    const themeCover =
+      (await getFirstExistingImage(getThemeCoverCandidates(productId))) ||
+      metaImages[0] ||
+      "";
+
+    return themeCover ? [themeCover] : [];
+  }
 
   if (category === "Sticker") {
     const stickerIds = getStickerIdsFromHtml(html);
@@ -240,28 +268,7 @@ function getSafeImages(html: string, pageUrl: string) {
     }
   }
 
-  /*
-    Theme หรือกรณีที่หา sticker ids ไม่ได้:
-    ใช้เฉพาะรูปที่ LINE ให้ใน metadata และรูปที่ผูกกับ product id เท่านั้น
-    ห้ามใช้รูปทั้งหมดในหน้า เพราะจะมีสินค้าแนะนำปนมา
-  */
-  const allImages = getAllImageCandidates(html, pageUrl).filter(isUsableProductImage);
-
-  const sameProductImages = allImages.filter((imageUrl) => {
-    if (!productId) return false;
-
-    const lowerImageUrl = imageUrl.toLowerCase();
-    const lowerProductId = productId.toLowerCase();
-
-    return (
-      lowerImageUrl.includes(`/product/${lowerProductId}/`) ||
-      lowerImageUrl.includes(`/product/${lowerProductId}`) ||
-      lowerImageUrl.includes(`/${lowerProductId}/`) ||
-      lowerImageUrl.includes(`/${lowerProductId}_`)
-    );
-  });
-
-  return uniqueValues([...metaImages, ...sameProductImages]).slice(0, 60);
+  return metaImages.slice(0, 5);
 }
 
 export async function GET(request: NextRequest) {
@@ -328,14 +335,15 @@ export async function GET(request: NextRequest) {
 
     const html = await response.text();
     const title = getTitle(html);
-    const images = getSafeImages(html, normalizedUrl);
+    const images = await getSafeImages(html, normalizedUrl);
     const category = getCategoryFromUrl(normalizedUrl);
 
     const coverImage = images[0] ?? "";
 
-    const previewImages = images.filter(
-      (imageUrl) => imageUrl !== coverImage,
-    );
+    const previewImages =
+      category === "Theme"
+        ? []
+        : images.filter((imageUrl) => imageUrl !== coverImage);
 
     const result: LineStorePreviewResponse = {
       title,
@@ -344,7 +352,7 @@ export async function GET(request: NextRequest) {
       previewImages,
     };
 
-    if (!result.title && result.previewImages.length === 0) {
+    if (!result.title && !result.coverImage && result.previewImages.length === 0) {
       return NextResponse.json(
         {
           error:
