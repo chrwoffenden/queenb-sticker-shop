@@ -803,7 +803,7 @@ export default function NewProductPage() {
                     <img
                       src={coverImageSource}
                       alt="ตัวอย่างรูปปก"
-                      className="h-20 w-20 rounded-xl object-cover"
+                      className="h-20 w-20 rounded-xl bg-white object-contain p-1"
                     />
 
                     <div className="min-w-0 flex-1">
@@ -911,7 +911,7 @@ export default function NewProductPage() {
                               alt={`รูปจาก LINE Store ${
                                 index + 1
                               }`}
-                              className="aspect-square w-full rounded-xl object-cover"
+                              className="aspect-square w-full rounded-xl bg-white object-contain p-1"
                             />
 
                             <button
@@ -957,7 +957,7 @@ export default function NewProductPage() {
                             alt={`รูปตัวอย่าง ${
                               index + 1
                             }`}
-                            className="aspect-square w-full rounded-xl object-cover"
+                            className="aspect-square w-full rounded-xl bg-white object-contain p-1"
                           />
 
                           <p className="mt-2 truncate text-xs font-semibold">

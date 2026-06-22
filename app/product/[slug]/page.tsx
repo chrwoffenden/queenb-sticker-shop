@@ -427,7 +427,7 @@ export default function ProductDetailPage() {
                         alt={`${product.name} ตัวอย่าง ${
                           index + 1
                         }`}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full bg-white object-contain p-2"
                       />
                     </button>
                   ),
